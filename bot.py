@@ -15,13 +15,27 @@ bot = commands.Bot(command_prefix='!', description=description)
 
 @bot.event 
 async def on_message(message):
+    global bot 
+    selfID = bot.user.id
+    if message.author.id != selfID: #recursion check. do not react to your own messages
+            
+        
+        regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
+        if re.search(regexText,message.content):
+            pieces = re.split(regexText,message.content)
+            await handlers.cmdGeneral(message,pieces)
+        elif message.guild is None: 
+            regexText = r'([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
+            if re.search(regexText,message.content):
+                pieces = re.split(regexText,message.content)
+                pieces = ['','',pieces[1],pieces[2], '']
+                await handlers.cmdGeneral(message,pieces)
 
-    if message.content.startswith('!007 redact'):
-        await handlers.cmdRedact(message)
-    if re.search(r'(007[0-9]*)',message.content):
-        await handlers.reactEyes(message)
-    if re.search(r'(00718274602)',message.content):
-        await handlers.reactTrophies(message)
+        elif re.search(r'(00718274602)',message.content):
+            await handlers.reactTrophies(message)
+        elif re.search(r'(007[0-9]*)',message.content):
+            await handlers.reactEyes(message)
+        
 
 @bot.event
 async def on_ready():
@@ -29,52 +43,6 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-
-@bot.command()
-async def add(ctx, left: int, right: int):
-    """Adds two numbers together."""
-    await ctx.send(left + right)
-
-@bot.command()
-async def roll(ctx, dice: str):
-    """Rolls a dice in NdN format."""
-    try:
-        rolls, limit = map(int, dice.split('d'))
-    except Exception:
-        await ctx.send('Format has to be in NdN!')
-        return
-
-    result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
-    await ctx.send(result)
-
-@bot.command(description='For when you wanna settle the score some other way')
-async def choose(ctx, *choices: str):
-    """Chooses between multiple choices."""
-    await ctx.send(random.choice(choices))
-
-@bot.command()
-async def repeat(ctx, times: int, content='repeating...'):
-    """Repeats a message multiple times."""
-    for i in range(times):
-        await ctx.send(content)
-
-@bot.command()
-async def joined(ctx, member: discord.Member):
-    """Says when a member joined."""
-    await ctx.send('{0.name} joined in {0.joined_at}'.format(member))
-
-@bot.group()
-async def cool(ctx):
-    """Says if a user is cool.
-    In reality this just checks if a subcommand is being invoked.
-    """
-    if ctx.invoked_subcommand is None:
-        await ctx.send('No, {0.subcommand_passed} is not cool'.format(ctx))
-
-@cool.command(name='bot')
-async def _bot(ctx):
-    """Is the bot cool?"""
-    await ctx.send('Yes, the bot is cool.')
 
 
 with open("auth.json",'r') as json_file:

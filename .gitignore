@@ -105,3 +105,6 @@ dist
 auth.json
 auth.json
 *.pyc
+.vscode/launch.json
+.vscode/settings.json
+.vscode/launch.json
