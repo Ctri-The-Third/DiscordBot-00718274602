@@ -15,6 +15,8 @@ var bot = new Discord.Client({
    token: auth.token,
    autorun: true
 });
+//console.log(Discord);
+//console.log(bot);
 bot.on('ready', function (evt) {
     console.log('Connected');
     console.log('Logged in as: ');
@@ -49,4 +51,3 @@ bot.on('message', function (user, userID, channelID, message, evt) {
      }
      
 });
-

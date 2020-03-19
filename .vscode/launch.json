@@ -5,10 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": "Python: bot.py",
+            "type": "python",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}\\bot.js"
+            "program": "${workspaceFolder}\\bot.py",
+            "console": "integratedTerminal"
         }
     ]
 }

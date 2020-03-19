@@ -1,8 +1,0 @@
-{
-  "name": "00718274602 - LTE monitor and interactor",
-  "version": "0.1",
-  "description": "Designed to do simple funny interactions, and control my LTE application",
-  "main": "bot.js",
-  "author": "C'tri",
-  "dependencies": {}
-}
