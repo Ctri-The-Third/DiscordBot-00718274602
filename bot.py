@@ -5,6 +5,7 @@ import random
 import json
 import asyncio
 import re
+import handlers
 
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
@@ -16,28 +17,11 @@ bot = commands.Bot(command_prefix='!', description=description)
 async def on_message(message):
 
     if message.content.startswith('!007 redact'):
-        try:
-            await message.add_reaction('\N{EYES}')
-        except discord.HTTPException:
-            pass
-        msg = await message.channel.send('This message will self destruct in 3 seconds ')
-        await asyncio.sleep(3.0)
-        await msg.edit(content='[DATA REDACTED]')
-        await asyncio.sleep(3.0)
-        await msg.edit(content='[████ ████████] ')
-        await asyncio.sleep(30.0)
-        await msg.delete()
+        await handlers.cmdRedact(message)
     if re.search(r'(007[0-9]*)',message.content):
-        try:
-            await message.add_reaction('\N{EYES}')
-        except discord.HTTPException:
-            pass
+        await handlers.reactEyes(message)
     if re.search(r'(00718274602)',message.content):
-        try:
-            await message.add_reaction('\N{TROPHY}')
-            await message.add_reaction('👍') 
-        except discord.HTTPException:
-            pass
+        await handlers.reactTrophies(message)
 
 @bot.event
 async def on_ready():
