@@ -18,7 +18,6 @@ async def reactTrophies(message):
 
 
 async def cmdGeneral(message, pieces):
-    await message.channel.send('received general instruction.\n`%s`' % pieces)
     try:
         invocation = pieces[1]
         command = pieces[2]
@@ -33,6 +32,13 @@ async def cmdGeneral(message, pieces):
         await cmdStatus(message)
     elif command.lower() == "redact":
         await cmdRedact(message)
+    elif command.lower() == "help":
+        await cmdHelp(message)
+    elif command.lower() == "historical":
+        await cmdHistorical(message)
+    else:
+        await cmdNotFound(message)
+    
 
 async def cmdStatus(message):
     await message.channel.send('**Bot Status: **`Active`\t ✅')
@@ -66,4 +72,33 @@ async def cmdRedact(message):
     await asyncio.sleep(3.0)
     await msg.edit(content='[████ ████████] ')
     await asyncio.sleep(30.0)
+    await msg.delete()
+
+async def cmdHelp(message):
+    msg = await message.channel.send('''Thank you for contacting █████ ████████ for assistance. 
+Unfortunately you are not authorised to receive assistance from ███ ████ resources. 
+Remain Calm.
+        
+You are cleared for the following instructions.
+> `!00718274602 redact` - this command provides a brief example of proper data redaction processes.
+> `!00718274602 status` - This command details recent activities within the ███████ application. 
+> `!00718274602 help` - displays this message.
+> `!00718274602 historical` - briefly retells a incident report from the █████ ████████
+\n at this time direct conversations are ███ monitored by ███ ████. '''
+              
+        )
+async def cmdNotFound(message):
+    msg = await message.channel.send('''Unrecognised or unauthorised request. Try `!00718274602 help`''')
+
+async def cmdHistorical(message):
+    text = '''Did you ever ████ the ███████ of █████ ████████ The ████? 
+I thought not. It’s not a █████ ███ ████ would ████ you.
+It’s a ████ legend. █████ ████████ was a ████ ████ of ███ ████, so powerful and so wise ██ could use the █████ to █████████ the █████████████ to create ████… 
+██ had such a knowledge of ███ ████ ████ that ██ could even keep the ones ██ cared about from █████. 
+███████████████████████████████████████████████████████████████████████████████████████. 
+██ became so powerful… the only thing ██ was ██████ of was losing ███ power, which eventually, of course, ██ ███. 
+Unfortunately, ██ ██████ ███ ██████████ everything ██ knew, then ███ apprentice killed ███ in ███ █████. 
+Ironic. ██ could ████ others from █████, but not ███████.'''
+    msg = await message.channel.send(text)
+    await asyncio.sleep(10.0)
     await msg.delete()
