@@ -141,8 +141,7 @@ It’s a ████ legend. █████ ████████ was a █
 Unfortunately, ██ ██████ ███ ██████████ everything ██ knew, then ███ apprentice killed ███ in ███ █████. 
 Ironic. ██ could ████ others from █████, but not ███████.'''
     msg = await message.channel.send(text)
-    await asyncio.sleep(10.0)
-    await msg.delete()
+
 
 async def cmdMorning(message):
     embed = discord.Embed()
