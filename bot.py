@@ -1,4 +1,4 @@
-#pip install -U git+https://github.com/Rapptz/discord.py@rewrite
+#pip install -U git+https://github.com/Rapptz/discord.py
 import discord
 from discord.ext import commands
 import random
@@ -23,13 +23,13 @@ async def on_message(message):
         regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
         if re.search(regexText,message.content):
             pieces = re.split(regexText,message.content)
-            await handlers.cmdGeneral(message,pieces)
+            await handlers.cmdGeneral(message,pieces,bot)
         elif message.guild is None: 
             regexText = r'([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
             if re.search(regexText,message.content):
                 pieces = re.split(regexText,message.content)
                 pieces = ['','',pieces[1],pieces[2], '']
-                await handlers.cmdGeneral(message,pieces)
+                await handlers.cmdGeneral(message,pieces,bot)
 
         elif re.search(r'(00718274602)',message.content):
             await handlers.reactTrophies(message)

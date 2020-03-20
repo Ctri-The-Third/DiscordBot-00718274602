@@ -1,5 +1,8 @@
 import discord
 import asyncio
+import platform
+import math
+import random
 from SQLconnector import * 
 
 async def reactEyes(message):
@@ -17,7 +20,7 @@ async def reactTrophies(message):
 
 
 
-async def cmdGeneral(message, pieces):
+async def cmdGeneral(message, pieces, bot):
     try:
         invocation = pieces[1]
         command = pieces[2]
@@ -31,48 +34,85 @@ async def cmdGeneral(message, pieces):
     if command.lower() == "status":
         await cmdStatus(message)
     elif command.lower() == "redact":
-        await cmdRedact(message)
+        await cmdRedact(message,bot)
     elif command.lower() == "help":
         await cmdHelp(message)
     elif command.lower() == "historical":
         await cmdHistorical(message)
+    elif command.lower() == "morning" or command.lower() == "good morning":
+        await cmdMorning(message)
     else:
         await cmdNotFound(message)
     
 
 async def cmdStatus(message):
-    await message.channel.send('**Bot Status: **`Active`\t ✅')
 
+    embed = discord.Embed()
+    embed.title = "System status"
+    embed.add_field(name = "Bot Status", value = "`Active` ✅", inline=True)
+    embed.add_field(name = "Bot Home", value = '`%s`' % platform.node(), inline=True)
+    
     try:
         conn = connectToSource()
         
         cursor = conn.cursor()
-        sql = """ with data as (select row_number() over (partition by healthstatus order by finished desc ) as row, * from public."jobsView")
-        select * from data where finished is null or (finished is not null and row <= 3 and row > 0)
-        order by finished desc, started asc"""
+        sql = """ with data as (
+            select row_number() over 
+            (
+                partition by healthstatus order by finished desc ) as row
+                , * from public."jobsView"
+            )
+            select * from data 
+            where finished is null or 
+            (finished is not null and row <= 3 and row > 0)
+            order by finished desc, started asc"""
         cursor.execute(sql)
         results = cursor.fetchall()
-        await message.channel.send('**DB Status: **`Connected`\t ✅')
+        embed.add_field(name = "DB Status", value = "`Connected` ✅", inline=True)
     except:
-        await message.channel.send('**DB Status: **`Disabled`\t ❌')
-        
-    outStr = ""
+        embed.add_field(name = "DB Status", value = "`OFfline` ❌", inline=True)
+
+    await message.channel.send(embed=embed)            
+    embed = discord.Embed()
+    embed.title = "Active and recent ETL jobs"
+    
+    
     for result in results:
-        outStr = outStr + "> %s\t%s\t%s   %s \n" % (result[4][-5:],result[1],result[3],result[7]) 
-    outStr = "Active and recent DB jobs \n```%s```" % (outStr)
-    await message.channel.send(outStr)
+        statusString = "%s **%s**" %(result[4][-5:],result[1])
+        if result[11] is not None:
+            statusString = "%s, %s%%" % (statusString, result[11]) 
+        embed.add_field(name = statusString, value = "%s" % (result[3]+" "*40)[:40]) 
+        completionTime = "%s" %(result[7])
+        completionTime = completionTime[0:19]
+        embed.add_field(name="Completion time",value = "%s" % (completionTime),inline=True)
+        embed.add_field(name="Blocking | Blocked by",value = "0 | 0")
+    await message.channel.send(embed=embed)
+    
+    
 
 
+async def cmdRedact(message, bot):
 
-async def cmdRedact(message):
+#    msg = await message.channel.send('This message will self destruct in 3 seconds ')
+#    
+#    await asyncio.sleep(3.0)
+#    await msg.edit(content='`[DATA REDACTED]`')
+#    await asyncio.sleep(3.0)
+#    await msg.edit(content='`[████ ████████]`')
+#    await asyncio.sleep(30.0)
+#    await msg.delete()
+    counter = 0
+    async for msg in message.channel.history(limit=7):
+        
+        if msg.author.id == bot.user.id or msg.id == message.id:
+            try: 
+                await msg.delete()
+                counter = counter + 1
+            except:
+                pass
+        #print(msg)
+    await message.channel.send("Expunged %s messages" % counter)
 
-    msg = await message.channel.send('This message will self destruct in 3 seconds ')
-    await asyncio.sleep(3.0)
-    await msg.edit(content='[DATA REDACTED]')
-    await asyncio.sleep(3.0)
-    await msg.edit(content='[████ ████████] ')
-    await asyncio.sleep(30.0)
-    await msg.delete()
 
 async def cmdHelp(message):
     msg = await message.channel.send('''Thank you for contacting █████ ████████ for assistance. 
@@ -80,7 +120,8 @@ Unfortunately you are not authorised to receive assistance from ███ ██
 Remain Calm.
         
 You are cleared for the following instructions.
-> `!00718274602 redact` - this command provides a brief example of proper data redaction processes.
+> `!00718274602 morning` - a standard greeting.
+> `!00718274602 redact` - this command removes classified messages from the public domain.
 > `!00718274602 status` - This command details recent activities within the ███████ application. 
 > `!00718274602 help` - displays this message.
 > `!00718274602 historical` - briefly retells a incident report from the █████ ████████
@@ -102,3 +143,23 @@ Ironic. ██ could ████ others from █████, but not ███
     msg = await message.channel.send(text)
     await asyncio.sleep(10.0)
     await msg.delete()
+
+async def cmdMorning(message):
+    embed = discord.Embed()
+    embed.title = "Greeting"
+    embed.set_footer(text="NOTE: This greeting does not imply exceptional familiarity.")
+    additionalcomments = ["Weather based observations","Comment regarding frequency of public transportation"]
+    
+    max = len(additionalcomments)
+    addtionalComment = additionalcomments[random.randint(0,max-1)]
+
+
+    embed.add_field(name="greeting value",value="basic", inline=True)
+    embed.add_field(name="familiarity index", value="distant",inline = True)
+    embed.add_field(name="additional comments",value =addtionalComment, inline = False)
+    
+
+
+    embed.description = "This represents a single unity of recognition and good will with the parameters listed below."
+    msg = await message.channel.send("Good morning %s, please find your greeting attached." % message.author.mention, embed=embed)
+    
