@@ -5,10 +5,11 @@ import asyncio
 import platform
 import math
 import random
+import config as cfg
 from SQLconnector import * 
 
 breachCounter = 0
-
+reactionemojis = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','⛎','','','','','','','','','','','', ]
 async def reactEyes(message):
     try:
         await message.add_reaction('\N{EYES}')
@@ -26,9 +27,9 @@ async def reactTrophies(message):
 
 async def cmdGeneral(message, pieces, bot):
     try:
-        invocation = pieces[1]
-        command = pieces[2]
-        parameter = pieces[3]
+        invocation = pieces[1] #!007, !self, or None
+        command = pieces[2]  #redact, golem, etc...
+        parameter = pieces[3] #-20
     except:
         invocation = ""
         command = ""
@@ -47,8 +48,10 @@ async def cmdGeneral(message, pieces, bot):
         await cmdHistorical(message)
     elif command.lower() == "morning" or command.lower() == "good morning":
         await cmdMorning(message)
-    elif command.lower() == "where" or command.lower() == "channel":
-        await cmdChannel(message)
+    elif command.lower() == "golem":
+        await cmdGolemSetup(message, bot)
+    elif command.lower() == "warforged":
+        await cmdGolemShutdown(message, bot)
     else:
         await cmdNotFound(message)
     
@@ -121,7 +124,7 @@ async def cmdRedact(message, pieces, bot):
             except:
                 pass
         #print(msg)
-    await msg.edit(content = "REDACTED `%s` messages, searched through `%s`" % (counter,limit))    
+    await newMsg.edit(content = "REDACTED `%s` messages, searched through `%s`" % (counter,limit))    
 
 
 async def cmdExpunge(message, pieces,bot):
@@ -142,13 +145,37 @@ async def cmdExpunge(message, pieces,bot):
     await message.channel.send("EXPUNGED `%s` messages, searched through `%s`" % (counter,limit))    
     return
 
-async def cmdChannel(message):
-    ID = message.channel.id
+async def cmdGolemSetup(message, bot):
+    global reactionemojis
+    text = "> **List of all guilds and channels this bot has access to.**\n```"
+    counter = 0 
+    for guild in bot.guilds:
+        text = text + "%s \t %s\n" % (guild.name, guild.id)
+        for channel in guild.channels:
+            if channel.type.name == "text":
+                
+                text = text + "[%s]\t%s\t%s\t%s\n" % (reactionemojis[counter], channel.name, channel.id,channel.type.name)
+                counter = counter + 1 
+
+    text = text + "```\n> To direct 00718274602 to communicate in a channel, react appropriately. Press [❌] to clear"
+
     
-    msg = await message.channel.send('''This channel ID is `%s`''' % ID )
+    msg = await message.channel.send(text)
+    otherCounter = 0
+    await msg.add_reaction("❌")
+
+
+    while otherCounter < counter:
+        await msg.add_reaction(reactionemojis[otherCounter])
+        otherCounter = otherCounter + 1 
+
     #await msg.add_reaction('🇦')
     #await msg.add_reaction('🇧')    
     return 
+
+async def cmdGolemShutdown(message, bot):
+    cfg.golemMode["enabled"] = False
+    await message.channel.send('`Golem mode disabled`')
 
 
 async def cmdHelp(message):
@@ -217,3 +244,50 @@ async def forbiddenText(message):
         except Exception as e:
             print(e)
             pass
+
+
+async def golemMessage(message,bot):
+    if message.channel.id == cfg.golemMode["sourceChannelID"]:
+        targetChannel = await bot.fetch_channel(cfg.golemMode["channelID"])
+        await targetChannel.send(message.content)
+        #if so, route to TARGET channel
+    elif message.channel.id == cfg.golemMode["channelID"]:
+        sourceChannel = await bot.fetch_channel(cfg.golemMode["sourceChannelID"])
+        await sourceChannel.send("%s: %s" % (message.author.name, message.content))
+        #if so, route to source channel.
+    else:   
+        return
+        
+    #then check if it's in the SOURCE channel
+async def reactGolemList(reaction,user,bot):
+    #await reaction.message.channel.send("reaction detected to golem scout")
+    channelIndex = -1
+    if reaction.emoji == "❌":
+        await reaction.message.edit (content = "`Golem mode disabled`")
+        cfg.golemMode["enabled"] = False
+        return
+
+    try: 
+        channelIndex = reactionemojis.index(reaction.emoji)
+    except Exception as e:
+        await reaction.message.channel.send("Reaction not mapped correctly.")
+        return    
+
+    else:
+        counter = 0
+        for guild in bot.guilds:
+            for channel in guild.channels:
+                if channel.type.name == "text":
+                    if counter == channelIndex:
+                        cfg.golemMode["enabled"] = True
+                        cfg.golemMode["channelID"] = channel.id
+                        cfg.golemMode["sourceChannelID"] = reaction.message.channel.id
+                        #await channel.send("`Communication to channel authorised`")
+                        await reaction.message.edit(content = "```golem mode enabled. react with :x: to disable.\nTarget is channel [%s]```" %  (channel.name))
+                        
+                        break 
+                    
+                    counter = counter + 1 
+        #seekID
+
+    return
