@@ -1,9 +1,13 @@
+import datetime
+
 import discord
 import asyncio
 import platform
 import math
 import random
 from SQLconnector import * 
+
+breachCounter = 0
 
 async def reactEyes(message):
     try:
@@ -34,13 +38,17 @@ async def cmdGeneral(message, pieces, bot):
     if command.lower() == "status":
         await cmdStatus(message)
     elif command.lower() == "redact":
-        await cmdRedact(message,bot)
+        await cmdRedact(message,pieces, bot)
+    elif command.lower() == "expunge":
+        await cmdExpunge(message,pieces,bot)
     elif command.lower() == "help":
         await cmdHelp(message)
     elif command.lower() == "historical":
         await cmdHistorical(message)
     elif command.lower() == "morning" or command.lower() == "good morning":
         await cmdMorning(message)
+    elif command.lower() == "where" or command.lower() == "channel":
+        await cmdChannel(message)
     else:
         await cmdNotFound(message)
     
@@ -91,27 +99,56 @@ async def cmdStatus(message):
     
 
 
-async def cmdRedact(message, bot):
+async def cmdRedact(message, pieces, bot):
 
-#    msg = await message.channel.send('This message will self destruct in 3 seconds ')
-#    
-#    await asyncio.sleep(3.0)
-#    await msg.edit(content='`[DATA REDACTED]`')
-#    await asyncio.sleep(3.0)
-#    await msg.edit(content='`[████ ████████]`')
-#    await asyncio.sleep(30.0)
-#    await msg.delete()
     counter = 0
-    async for msg in message.channel.history(limit=7):
-        
-        if msg.author.id == bot.user.id or msg.id == message.id:
+    newMsg = await message.channel.send("Redacting..." )
+    limit = 10
+
+    try:
+        limit = int(pieces)
+    except Exception as e:
+        pass
+
+    
+    async for msg in message.channel.history(limit=limit):
+        if (msg.author.id == bot.user.id or msg.id == message.id ) and msg.id != newMsg.id :
             try: 
-                await msg.delete()
+            
+                await msg.edit(suppress = True, content = "`[redacted]`")
+                #await msg.embeds.Delete()
                 counter = counter + 1
             except:
                 pass
         #print(msg)
-    await message.channel.send("Expunged %s messages" % counter)
+    await msg.edit(content = "REDACTED `%s` messages, searched through `%s`" % (counter,limit))    
+
+
+async def cmdExpunge(message, pieces,bot):
+    limit = 10
+    counter =0  
+    try:
+        limit = int(pieces [3])
+    except Exception as e:
+        pass
+    print("trying to expunge %s" %(limit))
+    async for msg in message.channel.history(limit=limit):            
+        if msg.author.id == bot.user.id or msg.author.id == message.author.id:
+                try:         
+                    await msg.delete()
+                    counter = counter + 1
+                except:
+                    pass
+    await message.channel.send("EXPUNGED `%s` messages, searched through `%s`" % (counter,limit))    
+    return
+
+async def cmdChannel(message):
+    ID = message.channel.id
+    
+    msg = await message.channel.send('''This channel ID is `%s`''' % ID )
+    #await msg.add_reaction('🇦')
+    #await msg.add_reaction('🇧')    
+    return 
 
 
 async def cmdHelp(message):
@@ -161,4 +198,22 @@ async def cmdMorning(message):
 
     embed.description = "This represents a single unity of recognition and good will with the parameters listed below."
     msg = await message.channel.send("Good morning %s, please find your greeting attached." % message.author.mention, embed=embed)
-    
+
+async def forbiddenText(message):
+    if message.channel.id != 689492668979609812:
+        try:
+            global breachCounter
+            embed = discord.Embed()
+            embed.title = "Redaction notice"
+            embed.description = "Please be aware that automated security protocols have detected unsanctioned discussion of a classified subject.\nIt is required that conversation on this subject be restricted to authorised locations only."
+            today = datetime.datetime.today()
+            
+            embed.set_footer(text="This breach has been logged, case ID %s%s%s" % (today.month,today.day,breachCounter))
+            embed.colour = discord.colour.Colour(15158332)
+            await message.channel.send(embed = embed)
+            breachCounter = breachCounter + 1
+            await message.delete()
+            
+        except Exception as e:
+            print(e)
+            pass

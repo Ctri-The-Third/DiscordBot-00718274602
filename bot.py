@@ -19,7 +19,11 @@ async def on_message(message):
     selfID = bot.user.id
     if message.author.id != selfID: #recursion check. do not react to your own messages
             
-        
+        if re.search(r'(Coronavirus|covid)+', message.content, flags = re.IGNORECASE):
+            await handlers.forbiddenText(message)
+
+
+
         regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
         if re.search(regexText,message.content):
             pieces = re.split(regexText,message.content)
@@ -36,6 +40,13 @@ async def on_message(message):
         elif re.search(r'(007[0-9]*)',message.content):
             await handlers.reactEyes(message)
         
+
+async def checkDB(self):
+    await self.wait_until_ready()
+    channel = self.get_channel
+    while not self.is_closed():
+        
+        await asyncio.sleep(30)
 
 @bot.event
 async def on_ready():
