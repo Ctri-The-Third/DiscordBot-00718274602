@@ -5,10 +5,11 @@ import json
 import asyncio
 import re
 import handlers
-
+import models.serviceMonitor
 class Warforged(discord.Client):
     
     _statusMessages = []
+    serviceMonitorInstance = None
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -19,20 +20,43 @@ class Warforged(discord.Client):
         await self.wait_until_ready()
         channel = self.get_channel(689778243225780338) # channel ID goes here
         counter = 0
+
+
+
+
         while not self.is_closed():
             counter += 1
-            await channel.send(counter)
-            await asyncio.sleep(20) # task runs every 60 seconds
+            
+            await asyncio.sleep(60) # task runs every 60 seconds
+            await self.updateStatusMessages()
 
 
-    def registerStatusMessage(self,message):
+    async def updateStatusMessages(self):
+            #service check should go here
+            #status messages should be updated with text
+            for statusM in self._statusMessages:
+                await statusM.sendOrUpdate()
 
-        pass
+    async def registerStatusMessage(self,report):
+        message = report.message
         #when a message is registered, check for other statusMessages in the channel.
         #delete other messages in the channel (they will be older)
         #store it in list.
         #regularly (every 10 seconds) check list of statusMessages and run their update function.
-    
+        async for history in message.channel.history(limit=100):
+            if history.author == self.user and history != message:
+                if re.match(r'\*\*Information requested:\*\* Service status',history.content):
+                    print("FOUND a definite message\t%s" % (history.content))
+                    await history.delete()
+                    
+                    #    self._statusMessages.remove(history)
+                    
+                    
+       
+        
+
+        self._statusMessages.append(report)
+        
 
     
     async def on_message(self,message):
@@ -60,10 +84,14 @@ class Warforged(discord.Client):
 
     
     async def on_ready(self):
+
+        
         print('Logged in as')
         print(self.user.name)
         print(self.user.id)
         print('------')
+        self.serviceMonitorInstance = await models.serviceMonitor.getActiveMonitor()
+        await self.serviceMonitorInstance.doStatusUpdate()
 
 if __name__ == "__main__":
     bot = Warforged()
