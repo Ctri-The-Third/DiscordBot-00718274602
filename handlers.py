@@ -3,6 +3,7 @@ import asyncio
 import platform
 import math
 import random
+from statusMessage import *
 from SQLconnector import * 
 
 async def reactEyes(message):
@@ -46,11 +47,18 @@ async def cmdGeneral(message, pieces, bot):
     
 
 async def cmdStatus(message):
-
+    report = statusMessage(channel=message.channel)
+    report.checkServices()
+    await report.sendOrUpdate()
+    return 
+    mesesge ="""**Information Requested: monitored system status.**
+    Beginning report.
+    
+    """
     embed = discord.Embed()
     embed.title = "System status"
-    embed.add_field(name = "Bot Status", value = "`Active` ✅", inline=True)
-    embed.add_field(name = "Bot Home", value = '`%s`' % platform.node(), inline=True)
+    embed.add_field(name = "Service", value = "> 00719274602\nDatabase", inline=True)
+    embed.add_field(name = "Status", value = '`✅ Active`\t%s\n' % platform.node(), inline=True)
     
     try:
         conn = connectToSource()

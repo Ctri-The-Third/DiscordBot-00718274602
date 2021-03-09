@@ -45,6 +45,7 @@ async def on_ready():
     print('------')
 
 
-with open("auth.json",'r') as json_file:
-    config = json.load(json_file)
-bot.run(config['token'])
+if __name__ == "__main__":
+    with open("auth.json",'r') as json_file:
+        config = json.load(json_file)
+    bot.run(config['token'])
