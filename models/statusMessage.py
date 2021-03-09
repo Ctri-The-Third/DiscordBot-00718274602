@@ -4,8 +4,6 @@ import datetime
 
 
 class statusMessage:
-
-
     messageEmbed = None
     message = None
     messageState = None

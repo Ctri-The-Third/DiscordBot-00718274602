@@ -3,7 +3,7 @@ import asyncio
 import platform
 import math
 import random
-from statusMessage import *
+from models.statusMessage import *
 from SQLconnector import * 
 
 async def reactEyes(message):
@@ -42,6 +42,8 @@ async def cmdGeneral(message, pieces, bot):
         await cmdHistorical(message)
     elif command.lower() == "morning" or command.lower() == "good morning":
         await cmdMorning(message)
+    elif command.lower() == "ping":
+        await cmdPing(message,bot)
     else:
         await cmdNotFound(message)
     
@@ -96,7 +98,9 @@ async def cmdStatus(message):
         embed.add_field(name="Blocking | Blocked by",value = "0 | 0")
     await message.channel.send(embed=embed)
     
-    
+async def cmdPing(message,bot):
+    content = """> Channel - %s,%s\n> you - %s,%s\n> your message - %s """ % (message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
+    await message.channel.send(content)
 
 
 async def cmdRedact(message, bot):
