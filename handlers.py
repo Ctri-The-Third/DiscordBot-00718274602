@@ -33,7 +33,7 @@ async def cmdGeneral(message, pieces, bot):
         await message.channel.send('`An error has been encountered. Request not processed`')
 
     if command.lower() == "status":
-        await cmdStatus(message)
+        await cmdStatus(message,bot)
     elif command.lower() == "redact":
         await cmdRedact(message,bot)
     elif command.lower() == "help":
@@ -48,55 +48,12 @@ async def cmdGeneral(message, pieces, bot):
         await cmdNotFound(message)
     
 
-async def cmdStatus(message):
+async def cmdStatus(message,bot):
     report = statusMessage(channel=message.channel)
-    report.checkServices()
     await report.sendOrUpdate()
-    return 
-    mesesge ="""**Information Requested: monitored system status.**
-    Beginning report.
+    await bot.registerStatusMessage(report)
+    bot.doStatusUpdate()
     
-    """
-    embed = discord.Embed()
-    embed.title = "System status"
-    embed.add_field(name = "Service", value = "> 00719274602\nDatabase", inline=True)
-    embed.add_field(name = "Status", value = '`✅ Active`\t%s\n' % platform.node(), inline=True)
-    
-    try:
-        conn = connectToSource()
-        
-        cursor = conn.cursor()
-        sql = """ with data as (
-            select row_number() over 
-            (
-                partition by healthstatus order by finished desc ) as row
-                , * from public."jobsView"
-            )
-            select * from data 
-            where finished is null or 
-            (finished is not null and row <= 3 and row > 0)
-            order by finished desc, started asc"""
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        embed.add_field(name = "DB Status", value = "`Connected` ✅", inline=True)
-    except:
-        embed.add_field(name = "DB Status", value = "`OFfline` ❌", inline=True)
-
-    await message.channel.send(embed=embed)            
-    embed = discord.Embed()
-    embed.title = "Active and recent ETL jobs"
-    
-    
-    for result in results:
-        statusString = "%s **%s**" %(result[4][-5:],result[1])
-        if result[11] is not None:
-            statusString = "%s, %s%%" % (statusString, result[11]) 
-        embed.add_field(name = statusString, value = "%s" % (result[3]+" "*40)[:40]) 
-        completionTime = "%s" %(result[7])
-        completionTime = completionTime[0:19]
-        embed.add_field(name="Completion time",value = "%s" % (completionTime),inline=True)
-        embed.add_field(name="Blocking | Blocked by",value = "0 | 0")
-    await message.channel.send(embed=embed)
     
 async def cmdPing(message,bot):
     content = """> Channel - %s,%s\n> you - %s,%s\n> your message - %s """ % (message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
