@@ -19,6 +19,8 @@ class monitor:
     def __init__(self):
         self.loadConfig()
         
+    def getServices(self):
+        return self._services
 
     async def getServiceListText(self):
         returnString = ""
@@ -39,7 +41,7 @@ class monitor:
         servicesList = json.load(configFile)
         for serviceJSON in servicesList:  
             if serviceJSON["serviceType"] == "valheim":
-                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"])
+                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],serviceJSON["shutdownCommand"])
                 self._services.append(valheimServer)
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])
@@ -47,9 +49,8 @@ class monitor:
 
     async def doServiceUpdate(self):
         for service in self._services:
-            print("doServiceUpdate - starting next service %s" % service.getFriendlyName())
             await service.checkService()
-        print("all services updated")
+        
 
 if __name__ == "__main__":
     monitor = getActiveMonitor()

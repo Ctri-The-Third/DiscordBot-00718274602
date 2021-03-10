@@ -5,7 +5,7 @@ import math
 import random
 from models.statusMessage import *
 from SQLconnector import * 
-
+import serviceMonitors.serviceValheim
 async def reactEyes(message):
     try:
         await message.add_reaction('\N{EYES}')
@@ -19,6 +19,14 @@ async def reactTrophies(message):
     except discord.HTTPException:
         pass
 
+async def cmdValheim(message,serviceController,bot):
+    if serviceController is None:
+        message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
+        return
+    for service in serviceController.getServices():
+        if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
+            await service.tryStartService()
+            await message.channel.send("Attempting to activate %s. See `!007 status` for server status." % service.getFriendlyName())
 
 
 async def cmdGeneral(message, pieces, bot):

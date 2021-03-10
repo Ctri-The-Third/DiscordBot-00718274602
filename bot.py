@@ -28,6 +28,7 @@ class Warforged(discord.Client):
             await asyncio.sleep(5) # task runs every 60 seconds
             await self.serviceMonitorInstance.doServiceUpdate()
             await self.updateStatusMessages()
+            print("heartbeat")
 
 
     async def updateStatusMessages(self):
@@ -58,10 +59,12 @@ class Warforged(discord.Client):
         if message.author.id != selfID: #recursion check. do not react to your own messages
                 
             
-            regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
+            regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
             if re.search(regexText,message.content):
                 pieces = re.split(regexText,message.content)
                 await handlers.cmdGeneral(message,pieces,self)
+            elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
+                await handlers.cmdValheim(message,self.serviceMonitorInstance,self)
             elif message.guild is None: 
                 regexText = r'([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
                 if re.search(regexText,message.content):

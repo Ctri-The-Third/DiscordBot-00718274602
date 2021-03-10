@@ -1,6 +1,7 @@
-
+import os
 import grequests
 import json
+import datetime
 from models.service import *
  
 #all service requests should get a name, type in JSON, then specific config settings
@@ -10,21 +11,26 @@ class ServiceValheim(Service):
     serverStatusPort = ''
     serviceName = ''
     serviceType =''
-
+    startupCommand = ''
+    shutdownCommand = ''
+    lastOccupied = None
     _statusEmoji = ":black_large_square:"
     _statusText = "Not checked yet"
 
 
-    def __init__(self,serviceName, serviceType,serverHost, serverStatusPort):
+    def __init__(self,serviceName, serviceType,serverHost, serverStatusPort, startupCommand, shutdownCommand):
         super().__init__(serviceName,serviceType) 
         self.serverHost = serverHost
         self.serverStatusPort = serverStatusPort
         self.serviceType = serviceType
         self.serviceName = serviceName
-
+        self.startupCommand = startupCommand
+        self.shutdownCommand = shutdownCommand
+        self.lastOccupied = datetime.datetime.now()
             
     async def checkService(self):
         url = "http://%s:%s/status.json" % (self.serverHost,self.serverStatusPort)
+        playerCount = 0 
         try:
             requests = [grequests.get(url,timeout=5)]
             responses = grequests.map(requests)
@@ -48,10 +54,17 @@ class ServiceValheim(Service):
             if "player_count" in serverStatus:
                 self._statusEmoji = ":green_square:"
                 self._statusText = "%s/10 players" % (serverStatus["player_count"])
+                playerCount = serverStatus["player_count"]
             else: 
                 self._statusEmoji = ":yellow_square:"
                 self._statusText = "Probably waking up"
-
+        if playerCount > 0:
+            self.lastOccupied = datetime.datetime.now()
+        else: 
+            timeSinceOccupied = datetime.datetime.now() - self.lastOccupied 
+            print("Server [%s]- time since last occupied: %s" % (self.getFriendlyName(),timeSinceOccupied))
+            if timeSinceOccupied.seconds > 120:
+                self.tryStopService()
         # throw in the box active but server inactive
         return
 
@@ -64,9 +77,10 @@ class ServiceValheim(Service):
     def getStatusText(self):
         return self._statusText
 
-    def tryStartService():
-
+    async def tryStartService(self ):
+        os.system(self.startupCommand)
         return 
-    def tryStopService():
-        
+    def tryStopService(self):
+        os.system(self.shutdownCommand)
+
         return 
