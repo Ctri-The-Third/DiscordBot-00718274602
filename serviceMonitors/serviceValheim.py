@@ -63,7 +63,7 @@ class ServiceValheim(Service):
         else: 
             timeSinceOccupied = datetime.datetime.now() - self.lastOccupied 
             print("Server [%s]- time since last occupied: %s" % (self.getFriendlyName(),timeSinceOccupied))
-            if timeSinceOccupied.seconds > 120:
+            if timeSinceOccupied.seconds > 1200:
                 self.tryStopService()
         # throw in the box active but server inactive
         return
@@ -78,7 +78,9 @@ class ServiceValheim(Service):
         return self._statusText
 
     async def tryStartService(self ):
+    
         os.system(self.startupCommand)
+        self.lastOccupied = datetime.datetime.now()
         return 
     def tryStopService(self):
         os.system(self.shutdownCommand)
