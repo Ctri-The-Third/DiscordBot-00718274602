@@ -9,7 +9,7 @@ class Service():
         self.serviceName = serviceName
         self.serviceType = serviceType
     
-    def checkService(self):
+    async def checkService(self):
         return
 
     def getFriendlyName(self):

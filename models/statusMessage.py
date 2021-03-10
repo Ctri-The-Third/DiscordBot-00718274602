@@ -13,7 +13,7 @@ class statusMessage:
     servicesStatusText = "⬛ no services checked"
     channel = None
     
-
+    destroyed = False
 
     async def _sendMessage(self):
         newMessage = await self.channel.send(content=self.messageText, embed = self.messageEmbed)
@@ -22,8 +22,13 @@ class statusMessage:
 
     async def sendOrUpdate(self):
         await self._refreshEmbed()
+        
         if self.message is not None:
-            await self.message.edit(embed=self.messageEmbed)
+            try:
+                await self.message.edit(embed=self.messageEmbed)
+            except Exception as e:
+                print("Couldn't updpate status message \n %s" % e)
+                self.message = None
             return
         else:
             await self._sendMessage()

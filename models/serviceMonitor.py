@@ -47,7 +47,8 @@ class monitor:
 
     async def doServiceUpdate(self):
         for service in self._services:
-            service.checkService()
+            print("doServiceUpdate - starting next service %s" % service.getFriendlyName())
+            await service.checkService()
         print("all services updated")
 
 if __name__ == "__main__":

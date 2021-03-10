@@ -1,4 +1,5 @@
-import requests
+
+import grequests
 import json
 from models.service import *
  
@@ -10,8 +11,10 @@ class ServiceValheim(Service):
     serviceName = ''
     serviceType =''
 
-    _statusEmoji = ":black_square:"
+    _statusEmoji = ":black_large_square:"
     _statusText = "Not checked yet"
+
+
     def __init__(self,serviceName, serviceType,serverHost, serverStatusPort):
         super().__init__(serviceName,serviceType) 
         self.serverHost = serverHost
@@ -20,14 +23,21 @@ class ServiceValheim(Service):
         self.serviceName = serviceName
 
             
-    def checkService(self):
+    async def checkService(self):
         url = "http://%s:%s/status.json" % (self.serverHost,self.serverStatusPort)
         try:
-            response = requests.get(url)
-        except:
+            requests = [grequests.get(url,timeout=5)]
+            responses = grequests.map(requests)
+            response = responses[0]
+            if response == None:
+                raise Exception("Did not receive response from server")
+            
+        except Exception as e:
             self._statusEmoji = ":red_square:"
             self._statusText = "Server unreachable"
+            print(e)
             return
+        
         if response.status_code == 200:
             servercont = {}
             try:
@@ -54,4 +64,9 @@ class ServiceValheim(Service):
     def getStatusText(self):
         return self._statusText
 
+    def tryStartService():
 
+        return 
+    def tryStopService():
+        
+        return 

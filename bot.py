@@ -24,6 +24,7 @@ class Warforged(discord.Client):
         while not self.is_closed():
             counter += 1
             #await channel.send("%s" % counter)
+            
             await asyncio.sleep(5) # task runs every 60 seconds
             await self.serviceMonitorInstance.doServiceUpdate()
             await self.updateStatusMessages()
