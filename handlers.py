@@ -52,7 +52,7 @@ async def cmdStatus(message,bot):
     report = statusMessage(channel=message.channel)
     await report.sendOrUpdate()
     await bot.registerStatusMessage(report)
-    bot.doStatusUpdate()
+    #await bot.updateStatusMessages()
     
     
 async def cmdPing(message,bot):

@@ -13,9 +13,7 @@ class statusMessage:
     servicesStatusText = "⬛ no services checked"
     channel = None
     
-    def __init__(self):
-        self.servicesListText = models.serviceMonitor.getActiveMonitor().getServiceListText()
-        self.servicesStatusText = models.serviceMonitor.getActiveMonitor().getServiceStatusText()
+
 
     async def _sendMessage(self):
         newMessage = await self.channel.send(content=self.messageText, embed = self.messageEmbed)
@@ -23,7 +21,7 @@ class statusMessage:
         
 
     async def sendOrUpdate(self):
-        self._refreshEmbed()
+        await self._refreshEmbed()
         if self.message is not None:
             await self.message.edit(embed=self.messageEmbed)
             return
@@ -38,9 +36,15 @@ class statusMessage:
         return 
 
 
-    def _refreshEmbed(self):
+    async def _refreshEmbed(self):
+
+        serviceMonitorInstance = await models.serviceMonitor.getActiveMonitor()
+        self.servicesListText = await serviceMonitorInstance.getServiceListText()
+        self.servicesStatusText = await serviceMonitorInstance.getServiceStatusText()
+
+
         messageEmbed = discord.Embed()
-        
+
         messageEmbed.add_field(name = "Service", value = self.servicesListText, inline=True)
         messageEmbed.add_field(name = "Status", value = self.servicesStatusText, inline=True)
         messageEmbed.colour = discord.Colour.green()
@@ -67,6 +71,7 @@ class statusMessage:
         else:
             self.messageText = """**Information requested:** Service status
 Beginning report..."""
+        
         self.channel = channel #discord.channel
 
     

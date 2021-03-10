@@ -5,7 +5,7 @@ import json
 import asyncio
 import re
 import handlers
-import models.serviceMonitor
+import models.serviceMonitor as serviceMonitor
 class Warforged(discord.Client):
     
     _statusMessages = []
@@ -18,24 +18,22 @@ class Warforged(discord.Client):
 
     async def statusUpdater(self):
         await self.wait_until_ready()
-        channel = self.get_channel(689778243225780338) # channel ID goes here
+        channel = self.get_channel(689960699921039360) # channel ID goes here
         counter = 0
-
-
-
 
         while not self.is_closed():
             counter += 1
-            
-            await asyncio.sleep(60) # task runs every 60 seconds
+            #await channel.send("%s" % counter)
+            await asyncio.sleep(5) # task runs every 60 seconds
+            await self.serviceMonitorInstance.doServiceUpdate()
             await self.updateStatusMessages()
 
 
     async def updateStatusMessages(self):
-            #service check should go here
-            #status messages should be updated with text
-            for statusM in self._statusMessages:
-                await statusM.sendOrUpdate()
+        #service check should go here
+        #status messages should be updated with text
+        for statusM in self._statusMessages:
+            await statusM.sendOrUpdate()
 
     async def registerStatusMessage(self,report):
         message = report.message
@@ -48,13 +46,7 @@ class Warforged(discord.Client):
                 if re.match(r'\*\*Information requested:\*\* Service status',history.content):
                     print("FOUND a definite message\t%s" % (history.content))
                     await history.delete()
-                    
                     #    self._statusMessages.remove(history)
-                    
-                    
-       
-        
-
         self._statusMessages.append(report)
         
 
@@ -90,8 +82,10 @@ class Warforged(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
-        self.serviceMonitorInstance = await models.serviceMonitor.getActiveMonitor()
-        await self.serviceMonitorInstance.doStatusUpdate()
+        
+        self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
+                
+        
 
 if __name__ == "__main__":
     bot = Warforged()

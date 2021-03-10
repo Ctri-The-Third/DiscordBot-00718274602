@@ -3,15 +3,15 @@ import json
 from models.service import * 
 from serviceMonitors.serviceValheim import *
 
-_monitor = None
+_staticMonitor = None
 
 
 async def getActiveMonitor():
-    global _monitor
-    if _monitor is None:
-        _monitor = monitor()
-        await _monitor.doServiceUpdate()
-    return _monitor
+    global _staticMonitor
+    if _staticMonitor is None:
+        _staticMonitor = monitor()
+        await _staticMonitor.doServiceUpdate()
+    return _staticMonitor
 
 
 class monitor:
@@ -20,11 +20,17 @@ class monitor:
         self.loadConfig()
         
 
-    def getServiceListText(self):
-        return ""
+    async def getServiceListText(self):
+        returnString = ""
+        for service in self._services:
+            returnString = returnString + "> %s\n" % (service.getFriendlyName())
+        return returnString
 
-    def getServiceStatusText(self):
-        return ""
+    async def getServiceStatusText(self):
+        returnString = ""
+        for service in self._services:
+            returnString = returnString + "%s `%s`\n" % (service.getStatusEmoji(), service.getStatusText())
+        return returnString
 
 
     def loadConfig(self):
@@ -33,14 +39,16 @@ class monitor:
         servicesList = json.load(configFile)
         for serviceJSON in servicesList:  
             if serviceJSON["serviceType"] == "valheim":
-                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],"IP ADDRESS", "STATUS PORT")
+                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"])
                 self._services.append(valheimServer)
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])
                 self._services.append(genericService)
 
     async def doServiceUpdate(self):
-        print("Ready to update all services")
+        for service in self._services:
+            service.checkService()
+        print("all services updated")
 
 if __name__ == "__main__":
     monitor = getActiveMonitor()

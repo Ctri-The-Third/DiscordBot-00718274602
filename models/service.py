@@ -10,7 +10,13 @@ class Service():
         self.serviceType = serviceType
     
     def checkService(self):
-        returnObject = {"statusEmoji":"⬛","statusText":"Generic service found!"}
+        return
 
+    def getFriendlyName(self):
+        return self.serviceName
 
+    def getStatusEmoji(self):
+        return "⬛"
 
+    def getStatusText(self):
+        return "Unsupported service found!"
