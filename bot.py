@@ -6,36 +6,47 @@ import asyncio
 import re
 import handlers
 import models.serviceMonitor as serviceMonitor
+import threading 
+
+
 class Warforged(discord.Client):
     
     _statusMessages = []
     serviceMonitorInstance = None
+    statusUpdaterLoop = None
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.statusUpdaterLoop = self.loop.create_task(self.statusUpdater())
+        #detached loop not connected to the discord client for checking service
 
 
-    async def statusUpdater(self):
-        await self.wait_until_ready()
-        channel = self.get_channel(689960699921039360) # channel ID goes here
-        counter = 0
 
+    def serviceUpdaterLoop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.serviceUpdater())
+        loop.close()
+    
+    async def serviceUpdater(self):
         while not self.is_closed():
-            counter += 1
             #await channel.send("%s" % counter)
             
             await asyncio.sleep(5) # task runs every 60 seconds
             await self.serviceMonitorInstance.doServiceUpdate()
-            await self.updateStatusMessages()
-            print("heartbeat")
+            print("thread2-heartbeat")
 
 
-    async def updateStatusMessages(self):
+    async def updateStatusMessagesLoop(self):
         #service check should go here
         #status messages should be updated with text
-        for statusM in self._statusMessages:
-            await statusM.sendOrUpdate()
+        while True:
+            for statusM in self._statusMessages:
+                if statusM.destroyed:
+                    self._statusMessages.remove(statusM)
+                else:
+                    await statusM.sendOrUpdate()
+            await asyncio.sleep(10)
+            print("asyncMessage-heartbeat")
 
     async def registerStatusMessage(self,report):
         message = report.message
@@ -86,9 +97,11 @@ class Warforged(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
-        
+    
         self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
-                
+        self.statusUpdaterLoop = threading.Thread(target=self.serviceUpdaterLoop)
+        self.statusUpdaterLoop.start()
+        self.loop.create_task(self.updateStatusMessagesLoop())            
         
 
 if __name__ == "__main__":
