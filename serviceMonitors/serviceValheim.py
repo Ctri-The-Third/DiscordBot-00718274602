@@ -1,5 +1,5 @@
 import os
-import grequests
+import requests
 import json
 import datetime
 from models.service import *
@@ -32,9 +32,8 @@ class ServiceValheim(Service):
         url = "http://%s:%s/status.json" % (self.serverHost,self.serverStatusPort)
         playerCount = 0 
         try:
-            requests = [grequests.get(url,timeout=5)]
-            responses = grequests.map(requests)
-            response = responses[0]
+            response = requests.get(url,timeout=5)
+            
             if response == None:
                 raise Exception("Did not receive response from server")
             

@@ -30,7 +30,7 @@ class statusMessage:
                 await self.message.edit(embed=self.messageEmbed)
             except Exception as e:
                 print("Couldn't updpate status message \n %s" % e)
-                self.message = None
+                destroyed = True
             return
         else:
             await self._sendMessage()
