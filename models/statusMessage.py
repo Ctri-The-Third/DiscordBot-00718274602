@@ -9,6 +9,8 @@ class statusMessage:
     messageState = None
     messageText = None
     messageFooter = None
+    serverListText = "None"
+    serverStatusText = "⬛ no services checked"
     servicesListText = "None"
     servicesStatusText = "⬛ no services checked"
     channel = None
@@ -46,12 +48,17 @@ class statusMessage:
         serviceMonitorInstance = await models.serviceMonitor.getActiveMonitor()
         self.servicesListText = await serviceMonitorInstance.getServiceListText()
         self.servicesStatusText = await serviceMonitorInstance.getServiceStatusText()
-
+        self.serverListText = await serviceMonitorInstance.getServerListText()
+        self.serverStatusText = await serviceMonitorInstance.getServerStatusText()
 
         messageEmbed = discord.Embed()
 
+        messageEmbed.add_field(name="Server", value = self.serverListText, inline=True)
+        messageEmbed.add_field(name = "Status", value = self.serverStatusText, inline=True)
+        messageEmbed.add_field(name = "\u200b", value="\u200b", inline=True)
         messageEmbed.add_field(name = "Service", value = self.servicesListText, inline=True)
         messageEmbed.add_field(name = "Status", value = self.servicesStatusText, inline=True)
+
         messageEmbed.colour = discord.Colour.green()
         messageEmbed.set_footer(text=self._getFooter())
 

@@ -34,6 +34,7 @@ class Warforged(discord.Client):
     async def updateStatusMessages(self):
         #service check should go here
         #status messages should be updated with text
+        
         for statusM in self._statusMessages:
             await statusM.sendOrUpdate()
 

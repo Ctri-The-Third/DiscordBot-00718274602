@@ -1,4 +1,5 @@
 discord
 psycopg2
 requests
-requests_threads
+wakeonlan
+threading

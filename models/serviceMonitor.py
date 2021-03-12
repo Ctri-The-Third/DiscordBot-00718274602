@@ -2,7 +2,7 @@
 import json
 from models.service import * 
 from serviceMonitors.serviceValheim import *
-
+from serviceMonitors.serviceComputer import * 
 _staticMonitor = None
 
 
@@ -25,15 +25,30 @@ class monitor:
     async def getServiceListText(self):
         returnString = ""
         for service in self._services:
-            returnString = returnString + "> %s\n" % (service.getFriendlyName())
+            if service.serviceType != "server":
+                returnString = returnString + "> %s\n" % (service.getFriendlyName())
         return returnString
 
     async def getServiceStatusText(self):
         returnString = ""
         for service in self._services:
-            returnString = returnString + "%s `%s`\n" % (service.getStatusEmoji(), service.getStatusText())
+            if service.serviceType != "server":
+                returnString = returnString + "%s `%s`\n" % (service.getStatusEmoji(), service.getStatusText())
         return returnString
 
+    async def getServerListText(self):
+        returnString = ""
+        for service in self._services:
+            if service.serviceType == "server":
+                returnString = returnString + "> %s\n" % (service.getFriendlyName())
+        return returnString
+
+    async def getServerStatusText(self):
+        returnString = ""
+        for service in self._services:
+            if service.serviceType == "server":
+                returnString = returnString + "%s `%s`\n" % (service.getStatusEmoji(), service.getStatusText())
+        return returnString
 
     def loadConfig(self):
         self._services = [] 
@@ -43,6 +58,9 @@ class monitor:
             if serviceJSON["serviceType"] == "valheim":
                 valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],serviceJSON["shutdownCommand"])
                 self._services.append(valheimServer)
+            elif serviceJSON["serviceType"] == "server":
+                computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["shutdownCommand"],serviceJSON["serverMacAddress"])
+                self._services.append(computerService)
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])
                 self._services.append(genericService)

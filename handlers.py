@@ -27,6 +27,9 @@ async def cmdValheim(message,serviceController,bot):
         if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
             await service.tryStartService()
             await message.channel.send("Attempting to activate %s. See `!007 status` for server status." % service.getFriendlyName())
+        elif isinstance (service,serviceMonitors.serviceComputer.ServiceComputer):
+            await service.tryStartService()
+            await message.channel.send("Sending awake instruction to %s. NOTE: run this again once it's woken up!")
 
 
 async def cmdGeneral(message, pieces, bot):
