@@ -6,6 +6,7 @@ import asyncio
 import re
 import handlers
 import models.serviceMonitor as serviceMonitor
+import models.statusMessage
 import threading 
 
 
@@ -62,6 +63,21 @@ class Warforged(discord.Client):
                     #    self._statusMessages.remove(history)
         self._statusMessages.append(report)
         
+    async def reactivateHistoricStatusMessages(self):
+        for guild in self.guilds:
+            for channel in guild.channels:
+                if channel.type.name == "text":
+                    try: 
+                        async for history in channel.history(limit=100):
+                            if history.author == self.user:
+                                if re.match(r'\*\*Information requested:\*\* Service status',history.content):
+                                    print("FOUND a definite message\t%s" % (history.content))
+                                    deadStatusMessage = models.statusMessage.statusMessage(channel,message=history)
+                                    self._statusMessages.append(deadStatusMessage)                            
+                    except Exception as e:
+                        print("ERROR in reactivating historical status messages -\t%s\n%s"% (channel.name,e))
+
+                                
 
     
     async def on_message(self,message):
@@ -71,11 +87,13 @@ class Warforged(discord.Client):
                 
             
             regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
-            if re.search(regexText,message.content):
+            if re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
+                await handlers.cmdValheim(message,self.serviceMonitorInstance,self)
+            elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
+                await handlers.cmdAwaken(message,self)
+            elif re.search(regexText,message.content):
                 pieces = re.split(regexText,message.content)
                 await handlers.cmdGeneral(message,pieces,self)
-            elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
-                await handlers.cmdValheim(message,self.serviceMonitorInstance,self)
             elif message.guild is None: 
                 regexText = r'([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
                 if re.search(regexText,message.content):
@@ -98,10 +116,12 @@ class Warforged(discord.Client):
         print(self.user.id)
         print('------')
     
+
         self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
         self.statusUpdaterLoop = threading.Thread(target=self.serviceUpdaterLoop)
         self.statusUpdaterLoop.start()
-        self.loop.create_task(self.updateStatusMessagesLoop())            
+        self.loop.create_task(self.updateStatusMessagesLoop())
+        await self.reactivateHistoricStatusMessages()
         
 
 if __name__ == "__main__":

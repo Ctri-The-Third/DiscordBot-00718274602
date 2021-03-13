@@ -18,9 +18,16 @@ class monitor:
     _services = []
     def __init__(self):
         self.loadConfig()
+    
+    def getServices(self, serviceType = None):
+        if serviceType == None:
+            return self._services
+        returnObj = []
+        for service in self._services:
+            if service.serviceType == serviceType:
+                returnObj.append(service)
+        return returnObj
         
-    def getServices(self):
-        return self._services
 
     async def getServiceListText(self):
         returnString = ""

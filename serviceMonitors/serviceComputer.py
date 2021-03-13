@@ -2,6 +2,7 @@ import os
 import subprocess
 from models.service import * 
 from wakeonlan import send_magic_packet
+import socket
 
 #all service requests should get a name, type in JSON, then specific config settings
 
@@ -25,16 +26,18 @@ class ServiceComputer(Service):
         self.host = host
             
     async def checkService(self):
-        arg = "c" if os.name == 'posix' else "n"
-        response=os.system("ping -%s 1 %s" % (arg,self.host))
-
-        if response == 0:
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(3)
+        try: 
+            s.connect((self.host,22))
             self._statusEmoji = ":green_square:"
             self._statusText = "online"
-        else:
-            self._statusEmoji = ":snowflake:"
+        except socket.error as e:
+            print("INFO: couldn't connect to %s, reason %s" % (self.serviceName,e))
+            self._statusEmoji = ":zzz:"
             self._statusText = "offline"
-        return
+        
 
     def getFriendlyName(self):
         return self.serviceName
@@ -45,8 +48,8 @@ class ServiceComputer(Service):
     def getStatusText(self):
         return self._statusText
 
-    async def tryStartService(self ):
-        send_magic_packet('18-c0-d4-49-59-d0')
+    async def tryStartService(self):
+        send_magic_packet(self.serverMacAddress)
     
     def tryStopService(self):
         os.system(self.shutdownCommand)
