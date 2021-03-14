@@ -88,7 +88,7 @@ class Warforged(discord.Client):
             
             regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
             if re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
-                await handlers.cmdValheim(message,self.serviceMonitorInstance,self)
+                await handlers.cmdValheim(message,self)
             elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
                 await handlers.cmdAwaken(message,self)
             elif re.search(regexText,message.content):

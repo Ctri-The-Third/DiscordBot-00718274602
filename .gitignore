@@ -110,3 +110,5 @@ auth.json
 .vscode/launch.json
 services.json
 serviceControls/*
+auth-dev.json
+auth-prod.json
