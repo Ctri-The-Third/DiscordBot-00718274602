@@ -25,13 +25,11 @@ async def cmdValheim(message,bot):
     if serviceController is None:
         message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
         return
-    for service in serviceController.getServices():
+    for service in serviceController.getServices(serviceType="valheim"):
         if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
             await service.tryStartService()
             await message.channel.send("Attempting to activate %s. See `!007 status` for server status." % service.getFriendlyName())
-        elif isinstance (service,serviceMonitors.serviceComputer.ServiceComputer):
-            await service.tryStartService()
-            await message.channel.send("Sending awake instruction to %s. NOTE: run this again once it's woken up!")
+
 async def cmdAwaken(message, bot):
     computerServices = bot.serviceMonitorInstance.getServices(serviceType = 'server')
     for service in computerServices:
