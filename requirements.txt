@@ -1,0 +1,6 @@
+discord
+psycopg2
+requests
+wakeonlan
+threading
+wakeonlan
