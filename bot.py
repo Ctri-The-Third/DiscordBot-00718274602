@@ -91,6 +91,9 @@ class Warforged(discord.Client):
                 await handlers.cmdValheim(message,self)
             elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
                 await handlers.cmdAwaken(message,self)
+            elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?status', message.content):
+                await handlers.cmdStatus(message,self)
+                    
             elif re.search(regexText,message.content):
                 pieces = re.split(regexText,message.content)
                 await handlers.cmdGeneral(message,pieces,self)
@@ -115,8 +118,7 @@ class Warforged(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
-    
-
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="!007 help"))
         self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
         self.statusUpdaterLoop = threading.Thread(target=self.serviceUpdaterLoop)
         self.statusUpdaterLoop.start()

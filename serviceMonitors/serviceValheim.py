@@ -40,6 +40,7 @@ class ServiceValheim(Service):
         except Exception as e:
             self._statusEmoji = ":red_square:"
             self._statusText = "Server unreachable"
+            self.lastOccupied = None
             print(e)
             return
         
@@ -57,6 +58,8 @@ class ServiceValheim(Service):
             else: 
                 self._statusEmoji = ":yellow_square:"
                 self._statusText = "Probably waking up"
+                self.lastOccupied = datetime.datetime.now()    
+
         if playerCount > 0:
             self.lastOccupied = datetime.datetime.now()
         else: 
