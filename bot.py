@@ -86,16 +86,19 @@ class Warforged(discord.Client):
         if message.author.id != selfID: #recursion check. do not react to your own messages
                 
             
-            regexText = r'(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
-            if re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
-                await handlers.cmdValheim(message,self.serviceMonitorInstance,self)
-            elif re.search(r'[!?/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
+            regexText = r'^(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
+            if re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
+                await handlers.cmdValheim(message,self)
+            elif re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
                 await handlers.cmdAwaken(message,self)
+            elif re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?status', message.content):
+                await handlers.cmdStatus(message,self)
+                    
             elif re.search(regexText,message.content):
                 pieces = re.split(regexText,message.content)
                 await handlers.cmdGeneral(message,pieces,self)
             elif message.guild is None: 
-                regexText = r'([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
+                regexText = r'^([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?'
                 if re.search(regexText,message.content):
                     pieces = re.split(regexText,message.content)
                     pieces = ['','',pieces[1],pieces[2], '']
@@ -115,8 +118,7 @@ class Warforged(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
-    
-
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="!007 help"))
         self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
         self.statusUpdaterLoop = threading.Thread(target=self.serviceUpdaterLoop)
         self.statusUpdaterLoop.start()

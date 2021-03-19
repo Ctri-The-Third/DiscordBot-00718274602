@@ -25,13 +25,16 @@ async def cmdValheim(message,bot):
     if serviceController is None:
         message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
         return
-    for service in serviceController.getServices():
+    foundServices = False
+    for service in serviceController.getServices(serviceType="valheim"):
         if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
             await service.tryStartService()
-            await message.channel.send("Attempting to activate %s. See `!007 status` for server status." % service.getFriendlyName())
-        elif isinstance (service,serviceMonitors.serviceComputer.ServiceComputer):
-            await service.tryStartService()
-            await message.channel.send("Sending awake instruction to %s. NOTE: run this again once it's woken up!")
+            foundServices = True
+    if foundServices == True:
+        await message.channel.send("Attempted to activate all valheim servers. See `!007 status` for progress.")
+    else:
+        await message.channel.send("No valheim services configured, have the administrator check `services.json`")
+
 async def cmdAwaken(message, bot):
     computerServices = bot.serviceMonitorInstance.getServices(serviceType = 'server')
     for service in computerServices:
@@ -73,7 +76,7 @@ async def cmdPing(message,bot):
 
 
 async def cmdHelp(message):
-    msg = await message.channel.send('''Greetings. This bot primarily serves to monitor the status of services and servers. Use the following commands to interact with me. If you _must_, the shorthand !007 will work.
+    msg = await message.channel.send('''Greetings. This bot primarily serves to monitor the status of services and servers. Use the following commands to interact with me. If you _must_, the shorthand `!007` will work.
         
 You are cleared for the following instructions.
 > `!00718274602 status` - Shows the status of all servers and services being monitor
