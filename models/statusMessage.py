@@ -53,9 +53,10 @@ class statusMessage:
 
         messageEmbed = discord.Embed()
 
-        messageEmbed.add_field(name="Server", value = self.serverListText, inline=True)
-        messageEmbed.add_field(name = "Status", value = self.serverStatusText, inline=True)
-        messageEmbed.add_field(name = "\u200b", value="\u200b", inline=True)
+        if self.serverListText != '' and self.serverStatusText != '':
+            messageEmbed.add_field(name="Server", value = self.serverListText, inline=True)
+            messageEmbed.add_field(name = "Status", value = self.serverStatusText, inline=True)
+            messageEmbed.add_field(name = "\u200b", value="\u200b", inline=True)
         messageEmbed.add_field(name = "Service", value = self.servicesListText, inline=True)
         messageEmbed.add_field(name = "Status", value = self.servicesStatusText, inline=True)
 
