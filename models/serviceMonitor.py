@@ -57,19 +57,25 @@ class monitor:
                 returnString = returnString + "%s `%s`\n" % (service.getStatusEmoji(), service.getStatusText())
         return returnString
 
+    def getServiceByMenyEmoji(self, emoji):
+        for service in self._services:
+            if service.prefixEmoji is not None and service.prefixEmoji == emoji:
+                return service
+        return None
+
     def loadConfig(self):
         self._services = [] 
-        configFile = open("services.json","r")
+        configFile = open("services.json","r", encoding="utf-8")
         servicesList = json.load(configFile)
         for serviceJSON in servicesList:  
+            prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
+            shutdownCommand  = None if "shutdownCommand" not in serviceJSON else serviceJSON["shutdownCommand"]
             if serviceJSON["serviceType"] == "valheim":
-                prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
-                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],serviceJSON["shutdownCommand"], prefixEmoji= prefixEmoji)
+                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],shutdownCommand, prefixEmoji= prefixEmoji)
                 self._services.append(valheimServer)
             elif serviceJSON["serviceType"] == "server":
-                prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
                 MACAddress = None if "serverMacAddress" not in serviceJSON else serviceJSON["serverMacAddress"]
-                computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["shutdownCommand"], MACAddress = MACAddress, prefixEmoji = prefixEmoji)
+                computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],shutdownCommand = shutdownCommand, serverMacAddress = MACAddress, prefixEmoji = prefixEmoji)
                 self._services.append(computerService)
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])

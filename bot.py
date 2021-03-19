@@ -79,13 +79,13 @@ class Warforged(discord.Client):
 
                                 
     async def on_reaction_add(self,reaction,user):
-        if not reaction.me:
+        if not reaction.me or (reaction.me and reaction.count > 1):
             if models.statusMessage.isStatusMessage(reaction.message):
                 statusMessage = models.statusMessage.getStatusMessageFromDiscordMessage(reaction.message,self._statusMessages)
-                await statusMessage.on_reaction_add(statusMessage,reaction,user)
+                await statusMessage.on_reaction_add(reaction,user)
     
     async def on_message(self,message):
-         
+        message.content  = str.lower(message.content)
         selfID = self.user.id
         if message.author.id != selfID: #recursion check. do not react to your own messages
                 

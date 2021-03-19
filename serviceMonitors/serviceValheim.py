@@ -74,10 +74,19 @@ class ServiceValheim(Service):
         return
 
     def getFriendlyName(self):
-        return "%s %s" % ( self.prefixEmoji, self.serviceName ) 
+        if self.prefixEmoji is not None:
+            return "%s %s" % (self.prefixEmoji,self.serviceName)
+        else:
+            return self.prefixEmoji
         
     def getStatusEmoji(self):
         return self._statusEmoji
+
+    def getMenuEmoji(self):
+        if self.shutdownCommand is None and self.startupCommand is None:
+            return None
+        else:
+            return self.prefixEmoji
 
     def getStatusText(self):
         return self._statusText

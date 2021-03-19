@@ -14,9 +14,10 @@ class ServiceComputer(Service):
     shutdownCommand = ''
     _statusEmoji = ":black_large_square:"
     _statusText = "Not checked yet"
+    prefixEmoji = ""
 
 
-    def __init__(self,serviceName, serviceType,  host, shutdownCommand, serverMacAddress = None, prefixEmoji = None ):
+    def __init__(self,serviceName, serviceType,  host, shutdownCommand = None, serverMacAddress = None, prefixEmoji = None ):
         super().__init__(serviceName,serviceType) 
         
         self.serviceType = serviceType
@@ -24,7 +25,7 @@ class ServiceComputer(Service):
         self.serverMacAddress = serverMacAddress        
         self.shutdownCommand = shutdownCommand
         self.host = host
-            
+        self.prefixEmoji = prefixEmoji        
     async def checkService(self):
         
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,8 +40,18 @@ class ServiceComputer(Service):
             self._statusText = "offline"
         
 
+    def getMenuEmoji(self):
+        ### If no details/ interactables, return None
+        if self.serverMacAddress is None:
+            return None
+        else:
+            return self.prefixEmoji
+
     def getFriendlyName(self):
-        return self.serviceName
+        if self.prefixEmoji is not None:
+            return "%s %s" % (self.prefixEmoji,self.serviceName)
+        else:
+            return self.prefixEmoji
         
     def getStatusEmoji(self):
         return self._statusEmoji

@@ -5,9 +5,11 @@ import json
 class Service():
     serviceName = ""
     serviceType = ""
-    def __init__(self,serviceName,serviceType):
+    prefixEmoji = ""
+    def __init__(self,serviceName,serviceType, prefixEmoji = None):
         self.serviceName = serviceName
         self.serviceType = serviceType
+        self.prefixEmoji = prefixEmoji
     
     async def checkService(self):
         return
@@ -20,3 +22,6 @@ class Service():
 
     def getStatusText(self):
         return "Unsupported service found!"
+
+    def getMenuEmoji(self):
+        return None
