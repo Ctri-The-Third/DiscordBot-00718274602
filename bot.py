@@ -78,7 +78,11 @@ class Warforged(discord.Client):
                         print("ERROR in reactivating historical status messages -\t%s\n%s"% (channel.name,e))
 
                                 
-
+    async def on_reaction_add(self,reaction,user):
+        if not reaction.me:
+            if models.statusMessage.isStatusMessage(reaction.message):
+                statusMessage = models.statusMessage.getStatusMessageFromDiscordMessage(reaction.message,self._statusMessages)
+                await statusMessage.on_reaction_add(statusMessage,reaction,user)
     
     async def on_message(self,message):
          

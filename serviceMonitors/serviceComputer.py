@@ -16,7 +16,7 @@ class ServiceComputer(Service):
     _statusText = "Not checked yet"
 
 
-    def __init__(self,serviceName, serviceType,  host, shutdownCommand, serverMacAddress ):
+    def __init__(self,serviceName, serviceType,  host, shutdownCommand, serverMacAddress = None, prefixEmoji = None ):
         super().__init__(serviceName,serviceType) 
         
         self.serviceType = serviceType
@@ -49,7 +49,8 @@ class ServiceComputer(Service):
         return self._statusText
 
     async def tryStartService(self):
-        send_magic_packet(self.serverMacAddress)
+        if self.serverMacAddress is not None: 
+            send_magic_packet(self.serverMacAddress)
     
     def tryStopService(self):
         os.system(self.shutdownCommand)

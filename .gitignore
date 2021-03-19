@@ -112,3 +112,5 @@ services.json
 serviceControls/*
 auth-dev.json
 auth-prod.json
+auth_dev.json
+auth_live.json

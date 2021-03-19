@@ -14,11 +14,12 @@ class ServiceValheim(Service):
     startupCommand = ''
     shutdownCommand = ''
     lastOccupied = None
+    prefixEmoji = ""
     _statusEmoji = ":black_large_square:"
     _statusText = "Not checked yet"
 
 
-    def __init__(self,serviceName, serviceType,serverHost, serverStatusPort, startupCommand, shutdownCommand):
+    def __init__(self,serviceName, serviceType,serverHost, serverStatusPort, startupCommand, shutdownCommand, prefixEmoji = None):
         super().__init__(serviceName,serviceType) 
         self.serverHost = serverHost
         self.serverStatusPort = serverStatusPort
@@ -27,6 +28,8 @@ class ServiceValheim(Service):
         self.startupCommand = startupCommand
         self.shutdownCommand = shutdownCommand
         self.lastOccupied = datetime.datetime.now()
+        if prefixEmoji is not None:
+            self.prefixEmoji = prefixEmoji
             
     async def checkService(self):
         url = "http://%s:%s/status.json" % (self.serverHost,self.serverStatusPort)
@@ -71,7 +74,7 @@ class ServiceValheim(Service):
         return
 
     def getFriendlyName(self):
-        return self.serviceName
+        return "%s %s" % ( self.prefixEmoji, self.serviceName ) 
         
     def getStatusEmoji(self):
         return self._statusEmoji

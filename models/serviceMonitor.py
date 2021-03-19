@@ -63,10 +63,13 @@ class monitor:
         servicesList = json.load(configFile)
         for serviceJSON in servicesList:  
             if serviceJSON["serviceType"] == "valheim":
-                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],serviceJSON["shutdownCommand"])
+                prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
+                valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],serviceJSON["shutdownCommand"], prefixEmoji= prefixEmoji)
                 self._services.append(valheimServer)
             elif serviceJSON["serviceType"] == "server":
-                computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["shutdownCommand"],serviceJSON["serverMacAddress"])
+                prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
+                MACAddress = None if "serverMacAddress" not in serviceJSON else serviceJSON["serverMacAddress"]
+                computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["shutdownCommand"], MACAddress = MACAddress, prefixEmoji = prefixEmoji)
                 self._services.append(computerService)
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])

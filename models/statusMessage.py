@@ -15,10 +15,13 @@ class statusMessage:
     servicesStatusText = "⬛ no services checked"
     channel = None
     
+    screenState = "rootMenu" #serviceDetail
+
     destroyed = False
 
     async def _sendMessage(self):
         newMessage = await self.channel.send(content=self.messageText, embed = self.messageEmbed)
+        
         self.message =  newMessage
         
 
@@ -37,7 +40,10 @@ class statusMessage:
             return 
             #send 
     
-    
+
+    async def on_reaction_add(self,reaction,user):
+
+        return
 
     async def _editMessage(self):
         return 
@@ -87,4 +93,19 @@ Beginning report..."""
         
         self.channel = channel #discord.channel
 
-    
+
+def isStatusMessage(discordMessage):
+    if discordMessage.content == """**Information requested:** Service status
+Beginning report...""":
+
+        return True
+    return False
+
+def getStatusMessageFromDiscordMessage(discordMessage, listOfStatusMessages):
+    for statusMessage in listOfStatusMessages:
+        try:
+            if statusMessage.message.id == discordMessage.id:
+                return statusMessage
+        except:
+            continue
+    return None
