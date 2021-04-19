@@ -76,7 +76,7 @@ class ServiceValheim(Service):
             timeSinceOccupied = datetime.datetime.now() - self.lastOccupied 
             logging.info("Server [%s]- time since last occupied: %s" % (self.getFriendlyName(),timeSinceOccupied))
             if timeSinceOccupied.seconds > 1200:
-                self.tryStopService()
+                await self.tryStopService()
         # throw in the box active but server inactive
         return
 
