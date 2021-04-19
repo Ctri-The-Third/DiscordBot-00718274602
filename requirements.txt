@@ -4,3 +4,4 @@ requests
 wakeonlan
 threading
 wakeonlan
+bottle

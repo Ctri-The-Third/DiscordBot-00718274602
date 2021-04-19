@@ -20,7 +20,7 @@ async def reactTrophies(message):
     except discord.HTTPException:
         pass
 
-async def cmdValheim(message,bot):
+async def cmdValheim(message,bot, all = None):
     serviceController = bot.serviceMonitorInstance
     if serviceController is None:
         message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
@@ -28,12 +28,12 @@ async def cmdValheim(message,bot):
     foundServices = False
     for service in serviceController.getServices(serviceType="valheim"):
         if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
-            await service.tryStartService()
-            foundServices = True
+            if await service.tryStartService(guild = message.guild):
+                foundServices = True
     if foundServices == True:
-        await message.channel.send("Attempted to activate all valheim servers. See `!007 status` for progress.")
+        await message.channel.send("Attempted to activate appropriate valheim servers. See `!007 status` for progress.")
     else:
-        await message.channel.send("No valheim services configured, have the administrator check `services.json`")
+        await message.channel.send("No valheim services can be activated from this discord server, have the administrator check `services.json`")
 
 async def cmdAwaken(message, bot):
     computerServices = bot.serviceMonitorInstance.getServices(serviceType = 'server')
@@ -71,7 +71,7 @@ async def cmdStatus(message,bot):
     
     
 async def cmdPing(message,bot):
-    content = """> Channel - %s,%s\n> you - %s,%s\n> your message - %s """ % (message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
+    content = """> Guild - `%s`, %s\n> Channel - `%s`, %s\n> you - `%s`, %s\n> your message - `%s` """ % (message.guild.id, message.guild.name, message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
     await message.channel.send(content)
 
 
