@@ -8,7 +8,7 @@ import handlers
 import models.serviceMonitor as serviceMonitor
 import models.statusMessage
 import threading 
-
+import logging
 
 class Warforged(discord.Client):
     
@@ -34,7 +34,7 @@ class Warforged(discord.Client):
             
             await asyncio.sleep(5) # task runs every 60 seconds
             await self.serviceMonitorInstance.doServiceUpdate()
-            print("thread2-heartbeat")
+            logging.info("thread2-heartbeat")
 
 
     async def updateStatusMessagesLoop(self):
@@ -47,7 +47,7 @@ class Warforged(discord.Client):
                 else:
                     await statusM.sendOrUpdate()
             await asyncio.sleep(10)
-            print("asyncMessage-heartbeat")
+            logging.info("asyncMessage-heartbeat") 
 
     async def registerStatusMessage(self,report):
         message = report.message
@@ -58,7 +58,7 @@ class Warforged(discord.Client):
         async for history in message.channel.history(limit=100):
             if history.author == self.user and history != message:
                 if re.match(r'\*\*Information requested:\*\* Service status',history.content):
-                    print("FOUND a definite message\t%s" % (history.content))
+                    logging.info("FOUND a definite message\t%s" % (history.content))
                     await history.delete()
                     #    self._statusMessages.remove(history)
         self._statusMessages.append(report)
@@ -75,14 +75,20 @@ class Warforged(discord.Client):
                                     deadStatusMessage = models.statusMessage.statusMessage(channel,message=history)
                                     self._statusMessages.append(deadStatusMessage)                            
                     except Exception as e:
-                        print("ERROR in reactivating historical status messages -\t%s\n%s"% (channel.name,e))
+                        if e.status == 403:
+                            logging.info("No access to channel %s-`%s`" % (channel.name,channel.id))
+                        else:
+                            logging.warn("couldn't reactivate historical status messages -\t%s\n%s"% (channel.name,e))
 
                                 
     async def on_reaction_add(self,reaction,user):
         if not reaction.me or (reaction.me and reaction.count > 1):
             if models.statusMessage.isStatusMessage(reaction.message):
                 statusMessage = models.statusMessage.getStatusMessageFromDiscordMessage(reaction.message,self._statusMessages)
-                await statusMessage.on_reaction_add(reaction,user)
+                if statusMessage is not None:
+                    await statusMessage.on_reaction_add(reaction,user)
+                else: 
+                    print("ERROR - Status Message found but not registered? Bot.py\on_reaction_add")
     
     async def on_message(self,message):
         message.content  = str.lower(message.content)
@@ -118,22 +124,35 @@ class Warforged(discord.Client):
     async def on_ready(self):
 
         
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print('------')
+      
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="!007 help"))
         self.serviceMonitorInstance = await serviceMonitor.getActiveMonitor()
         self.statusUpdaterLoop = threading.Thread(target=self.serviceUpdaterLoop)
         self.statusUpdaterLoop.start()
+
+        
         self.loop.create_task(self.updateStatusMessagesLoop())
         await self.reactivateHistoricStatusMessages()
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
         
 
 if __name__ == "__main__":
+    
     bot = Warforged()
     with open("auth.json",'r') as json_file:
         config = json.load(json_file)
+    if "logging" in config:
+        try: 
+            logging.basicConfig(level=config["logging"],format='%(asctime)s-%(process)d-%(levelname)s-%(message)s')
+            logging.info("Set logging level to %s")
+        except:
+            logging.error("couldn't set logging level - check auth.json for invalid values. See python's logging module for valid int levels")
     bot.run(config['token'])
+
+    
+    
 
 

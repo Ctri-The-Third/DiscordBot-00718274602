@@ -1,7 +1,7 @@
 import discord
 import datetime
 import models.serviceMonitor
-
+import logging
 
 class statusMessage:
     messageEmbed = None
@@ -25,6 +25,7 @@ class statusMessage:
         await self._setEmoji()
     
     async def _setEmoji(self):
+        return #disabled for now
         if self.screenState == "rootMenu":
             activeMonitor = await models.serviceMonitor.getActiveMonitor()
             for service in activeMonitor.getServices():
@@ -34,7 +35,7 @@ class statusMessage:
                         
                         await self.message.add_reaction(menuEmoji)
                     except Exception as e:
-                        print("ERROR adding menu reaction \n%s" % (e))
+                        logging.warn("unable to add menu reaction \n%s" % (e))
         else:
             await self.message.add_reaction("🚫")
         if self.screenState == "detail":
@@ -49,11 +50,11 @@ class statusMessage:
         
         if self.message is not None:
             try:
-                print("EDITING MESSAGE %s" % (str(self.message.id)[0:10]))
+                logging.debug("EDITING MESSAGE %s" % (str(self.message.id)[0:10]))
                 await self.message.edit(embed=self.messageEmbed)
             except Exception as e:
-                print("Couldn't updpate status message \n %s" % e)
-                destroyed = True
+                logging.warn("Couldn't updpate status message \n %s" % e)
+                self.destroyed = True
             return
         else:
             await self._sendMessage()
@@ -133,6 +134,7 @@ class statusMessage:
     
 
     def _getFooter(self):
+        return "\nLast updated %s" % datetime.datetime.now().strftime(r'%Y-%b-%d %H:%M:%S')
         return "Use the appropriate emojis to see more details on a given service.\nLast updated %s" % datetime.datetime.now().strftime(r'%Y-%b-%d %H:%M:%S')
 
 

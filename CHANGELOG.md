@@ -1,7 +1,11 @@
 ## 1.3.0 - 2021-03-??
 
 ### Added
-
+* Process monitor class
+* Emoji menu for services with commands
+* detailed interaction menu for services
+* guild specific service activation for valheim
+* switch to logging module instead of print to terminal
 ### Changed
 
 ### Depreciated

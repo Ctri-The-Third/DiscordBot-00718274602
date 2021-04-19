@@ -3,6 +3,7 @@ import json
 from models.service import * 
 from serviceMonitors.serviceValheim import *
 from serviceMonitors.serviceComputer import * 
+
 _staticMonitor = None
 
 
@@ -10,7 +11,7 @@ async def getActiveMonitor():
     global _staticMonitor
     if _staticMonitor is None:
         _staticMonitor = monitor()
-        await _staticMonitor.doServiceUpdate()
+        #await _staticMonitor.doServiceUpdate()
     return _staticMonitor
 
 
@@ -73,6 +74,11 @@ class monitor:
             if serviceJSON["serviceType"] == "valheim":
                 valheimServer = ServiceValheim(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],serviceJSON["statusPort"],serviceJSON["startupCommand"],shutdownCommand, prefixEmoji= prefixEmoji)
                 self._services.append(valheimServer)
+                if "guilds" in serviceJSON:
+                    for guildName in serviceJSON["guilds"]:
+                        valheimServer.registerGuild(guildName)
+                else:
+                    logging.warn("valheim server %s does not have a guilds array associated with it.")
             elif serviceJSON["serviceType"] == "server":
                 MACAddress = None if "serverMacAddress" not in serviceJSON else serviceJSON["serverMacAddress"]
                 computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],shutdownCommand = shutdownCommand, serverMacAddress = MACAddress, prefixEmoji = prefixEmoji)
