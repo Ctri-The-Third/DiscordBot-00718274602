@@ -1,8 +1,9 @@
 
 import json
-from models.service import * 
+from models.service import *
 from serviceMonitors.serviceValheim import *
 from serviceMonitors.serviceComputer import * 
+from serviceMonitors.servicePresence import * 
 
 _staticMonitor = None
 
@@ -83,6 +84,15 @@ class monitor:
                 MACAddress = None if "serverMacAddress" not in serviceJSON else serviceJSON["serverMacAddress"]
                 computerService = ServiceComputer(serviceJSON["serviceName"],serviceJSON["serviceType"],serviceJSON["host"],shutdownCommand = shutdownCommand, serverMacAddress = MACAddress, prefixEmoji = prefixEmoji)
                 self._services.append(computerService)
+            elif serviceJSON["serviceType"] == "presence":
+                serviceName = None if "serviceName" not in serviceJSON else serviceJSON["serviceName"]
+                serviceType = None if "serviceType" not in serviceJSON else serviceJSON["serviceType"]
+                prefixEmoji = None if "prefixEmoji" not in serviceJSON else serviceJSON["prefixEmoji"]
+                hostname = None if "serviceHost" not in serviceJSON else serviceJSON["serviceHost"]
+                port = None if "servicePort" not in serviceJSON else serviceJSON["servicePort"]
+                authKey = None if "serviceKey" not in serviceJSON else serviceJSON["serviceKey"]
+                presenceService = ServicePresence(serviceName,serviceType,prefixEmoji,hostname,port,authKey)
+                self._services.append(presenceService) 
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])
                 self._services.append(genericService)

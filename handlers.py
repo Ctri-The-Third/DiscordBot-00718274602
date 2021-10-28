@@ -35,6 +35,11 @@ async def cmdValheim(message,bot, all = None):
     else:
         await message.channel.send("No valheim services can be activated from this discord server, have the administrator check `services.json`")
 
+async def cmdPresence(message,bot) -> None:
+    """upon receiving the presence command, if the user is authenticated then the user receives a compiled status message and control panel"""
+    
+    pass 
+
 async def cmdAwaken(message, bot):
     computerServices = bot.serviceMonitorInstance.getServices(serviceType = 'server')
     for service in computerServices:
