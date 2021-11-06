@@ -4,6 +4,7 @@ import platform
 import math
 import random
 import re
+from models.presenceMessage import presenceMessage
 from models.statusMessage import *
 from SQLconnector import * 
 import serviceMonitors.serviceValheim
@@ -37,8 +38,16 @@ async def cmdValheim(message,bot, all = None):
 
 async def cmdPresence(message,bot) -> None:
     """upon receiving the presence command, if the user is authenticated then the user receives a compiled status message and control panel"""
-    
-    pass 
+    author = message.author
+    if isinstance(author,discord.User) or isinstance(author,discord.Member):
+        serviceController = bot.serviceMonitorInstance
+        for service in serviceController.getServices("presence"):
+            if service.checkAuthUser(author.id):
+                msg = presenceMessage(service,author)
+                await msg.sendOrUpdate()
+                await bot.registerPresenceMessage(msg)
+
+        pass 
 
 async def cmdAwaken(message, bot):
     computerServices = bot.serviceMonitorInstance.getServices(serviceType = 'server')
@@ -76,7 +85,14 @@ async def cmdStatus(message,bot):
     
     
 async def cmdPing(message,bot):
-    content = """> Guild - `%s`, %s\n> Channel - `%s`, %s\n> you - `%s`, %s\n> your message - `%s` """ % (message.guild.id, message.guild.name, message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
+    if message.guild == None:
+        guildID = "None"
+        guildName = "No guild - DM?"
+    else:
+        guildID = message.guild.id
+        guildName = message.guild.name
+
+    content = """> Guild - `%s`, %s\n> Channel - `%s`, %s\n> you - `%s`, %s\n> your message - `%s` """ % (guildID, guildName, message.channel.id, message.channel.type.name, message.author.id, message.author.display_name, message.id )
     await message.channel.send(content)
 
 

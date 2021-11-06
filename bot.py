@@ -14,6 +14,7 @@ import logging
 class Warforged(discord.Client):
     
     _statusMessages = []
+    _presenceMessages = []
     serviceMonitorInstance = None
     statusUpdaterLoop = None
     def __init__(self, *args, **kwargs):
@@ -63,7 +64,9 @@ class Warforged(discord.Client):
                     await history.delete()
                     #    self._statusMessages.remove(history)
         self._statusMessages.append(report)
-        
+    
+
+
     async def reactivateHistoricStatusMessages(self):
         for guild in self.guilds:
             for channel in guild.channels:
@@ -81,7 +84,33 @@ class Warforged(discord.Client):
                         else:
                             logging.warn("couldn't reactivate historical status messages -\t%s\n%s"% (channel.name,e))
 
-                                
+
+
+   
+    async def registerPresenceMessage(self,message):
+        self._presenceMessages.append(message)
+        return 
+
+    async def removePresenceMessage(self,messageID):
+        for message in self._presenceMessages:
+            if message.messageID == messageID:
+                self._presenceMessages.pop(message)
+        return 
+
+
+    async def on_raw_reaction_add(self,payload):
+        if payload.guild_id == None: 
+            channel = await self.fetch_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+            user = await self.fetch_user(payload.user_id)
+            isMessage =  models.presenceMessage.isPresenceMessage(message)
+            if isMessage:
+                presenceMessage = models.presenceMessage.getPresenceMessageFromDiscordMessage(message)
+                presenceMessage.on_reaction_add_raw(user,payload.emoji.name)
+
+            
+        pass
+
     async def on_reaction_add(self,reaction,user):
         if not reaction.me or (reaction.me and reaction.count > 1):
             if models.statusMessage.isStatusMessage(reaction.message):
@@ -90,6 +119,11 @@ class Warforged(discord.Client):
                     await statusMessage.on_reaction_add(reaction,user)
                 else: 
                     print("ERROR - Status Message found but not registered? Bot.py\on_reaction_add")
+            elif models.presenceMessage.isPresenceMessage(reaction.message):
+                presenceMessage = models.presenceMessage.getPresenceMessageFromDiscordMessage(reaction.message)
+                if presenceMessage is not None:
+                    await presenceMessage.on_reaction_add(reaction,user)
+
     
     async def on_message(self,message):
         message.content  = str.lower(message.content)
@@ -100,7 +134,7 @@ class Warforged(discord.Client):
             regexText = r'^(!0071?8?2?7?4?6?0?2? |\/0071?8?2?7?4?6?0?2? ){1}([a-zA-Z0-9 ]*){1}(-[a-zA-z]*)?' 
             if re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?valh[ei]{2}m', message.content):
                 await handlers.cmdValheim(message,self)
-            if re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?presence', message.content):
+            if re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?presence', message.content) or re.search(r'!3',message.content):
                 await handlers.cmdPresence(message,self)
             elif re.search(r'^[!?\/](0071?8?2?7?4?6?0?2? )?a?waken?', message.content):
                 await handlers.cmdAwaken(message,self)

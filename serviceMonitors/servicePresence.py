@@ -1,5 +1,8 @@
 import requests
-import os 
+import os
+
+from requests import models
+import models.presenceMessage
 from models.service import * 
 
 #all service requests should get a name, type in JSON, then specific config settings
@@ -11,14 +14,17 @@ class ServicePresence(Service):
     _statusText = "Not checked yet"
     _enableds = 0
     _disableds = 0
+    _controlMessages = []
+    _authorizedIDs = []
 
-
-    def __init__(self,serviceName, serviceType, prefixEmoji = None, presenceHost = None, presencePort = None, presenceKey = None ):
+    def __init__(self,serviceName, serviceType, prefixEmoji = None, presenceHost = None, presencePort = None, presenceKey = None, authorizedIDs = None):
         super().__init__(serviceName,serviceType) 
         self.presenceHost = presenceHost
         self.presencePort = presencePort
         self.presenceKey = presenceKey
         self.prefixEmoji = prefixEmoji
+        self._authorizedIDs = authorizedIDs
+        
         
     async def checkService(self):
         headers = self._getHeaders()
@@ -65,6 +71,11 @@ class ServicePresence(Service):
 
         return
 
+    def checkAuthUser(self,userID):
+        for allowedUser in self._authorizedIDs:
+            if userID == allowedUser:
+                return True
+        return False
 
     def getMenuEmoji(self):
         return 

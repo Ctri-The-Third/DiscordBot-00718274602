@@ -91,7 +91,8 @@ class monitor:
                 hostname = None if "serviceHost" not in serviceJSON else serviceJSON["serviceHost"]
                 port = None if "servicePort" not in serviceJSON else serviceJSON["servicePort"]
                 authKey = None if "serviceKey" not in serviceJSON else serviceJSON["serviceKey"]
-                presenceService = ServicePresence(serviceName,serviceType,prefixEmoji,hostname,port,authKey)
+                authedIDs = [] if "authorisedIDs" not in serviceJSON else serviceJSON["authorisedIDs"]
+                presenceService = ServicePresence(serviceName,serviceType,prefixEmoji,hostname,port,authKey,authedIDs)
                 self._services.append(presenceService) 
             else: 
                 genericService = Service(serviceJSON["serviceName"],serviceJSON["serviceType"])
