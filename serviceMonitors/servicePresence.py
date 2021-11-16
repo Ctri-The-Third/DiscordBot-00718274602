@@ -2,6 +2,7 @@ import requests
 import os
 
 from requests import models
+from requests.api import head
 import models.presenceMessage
 from models.service import * 
 
@@ -93,11 +94,32 @@ class ServicePresence(Service):
     def getStatusText(self):
         return self._statusText
 
+    def checkWeekendMode(self):
+        return self._disableds > 1
+            
+
     def _getHeaders(self) -> dict:
         headers = {"Authorization": "Basic {0}".format(self.presenceKey)}
         return headers
     def _getURL(self) -> str:
         return "http://{0}:{1}/".format(self.presenceHost,self.presencePort)
+
+    def cmdWorkTasksEnable(self,userID):
+        if not self.checkAuthUser(userID):
+            return 
+        self._cmdWorkTasksToggle("true")
+
+    def cmdWorkTasksDisable(self,userID):
+        if not self.checkAuthUser(userID):
+            return 
+        self._cmdWorkTasksToggle("false")
+
+    def _cmdWorkTasksToggle(self,newState):
+        url = "{}{}{}".format(self._getURL(),"servicecontrol/worktasks/",newState)
+        headers = self._getHeaders()
+        result = requests.post(url=url,headers=headers)
+        print(result)
+
 
 if __name__ == '__main__':
     settings = json.load(open("services.json"))

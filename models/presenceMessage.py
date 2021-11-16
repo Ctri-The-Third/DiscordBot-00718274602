@@ -1,6 +1,7 @@
 import re
 import discord
 import datetime
+from models.service import Service
 import models.serviceMonitor
 import logging
 
@@ -22,7 +23,7 @@ class presenceMessage:
     destroyed = False
 
 
-    def __init__(self, presenceService, targetUser, message = None):
+    def __init__(self, presenceService, targetUser = None, message = None):
         if message is not None: 
             self.message = message
         else:
@@ -32,9 +33,15 @@ class presenceMessage:
 
 
     async def _sendMessage(self):
+        if self.targetUser == None:
+            #can't send a new message unless we know who triggered the !007 presence command.
+            
+            return 
         newMessage = await self.targetUser.send(content=self.messageText, embed = self.messageEmbed)
         self.message =  newMessage
+        
         await self.message.add_reaction("🟢")
+        await self.message.add_reaction("🔴")
         await self.message.add_reaction("😴")
         await self.message.add_reaction("📤")
     
@@ -66,9 +73,12 @@ class presenceMessage:
 
     async def _refreshEmbed(self):
         messageEmbed = discord.Embed()
-        serviceText = """🟢 to enable weekend mode
+        weekendMode = self.presenceService.checkWeekendMode()
+        weekendText = ""
+        serviceText = """🟢 to disable weekend mode
+🔴 to enable weekend mode
 😴 to trigger darkness
-📤 to purge inbox"""
+📤 to purge inbox""".format(weekendText)
 
         messageEmbed.add_field(name = "Commands", value = serviceText)
         
@@ -97,14 +107,32 @@ class presenceMessage:
         return "Use the appropriate emojis to see more details on a given service.\nLast updated %s" % datetime.datetime.now().strftime(r'%Y-%b-%d %H:%M:%S')
 
     def on_reaction_add_raw(self,user,emoji_name):
-        print("woooo")
+        if emoji_name  == "🟢" or emoji_name == "\U0001f7e2":
+            self.presenceService.cmdWorkTasksEnable(user.id)
+        elif emoji_name == "🔴":
+            self.presenceService.cmdWorkTasksDisable(user.id)
+            pass 
         return 
 
 
 def isPresenceMessage(discordMessage):
-    result =  re.match(r"\*\*.* online, awaiting command\*\*",discordMessage.clean_content)
+    result =  re.match(r"\*\*(.*) online, awaiting command\*\*",discordMessage.clean_content)
     return not (result == None)
 
-def getPresenceMessageFromDiscordMessage(discordMessage):
+def getPresenceServiceName(discordMessage):
+    result =  re.match(r"\*\*(.*) online, awaiting command\*\*",discordMessage.clean_content)
+    return not (result == None)
+
+
+
+async def getPresenceMessageFromDiscordMessage(discordMessage, user=None):
     if isPresenceMessage(discordMessage):
-        presenceMessage(discordMessage.channel,message=discordMessage)
+        #self, presenceService, targetUser = None, message = None
+        monitor = await models.serviceMonitor.getActiveMonitor()
+        services = monitor.getServices("presence")
+        if len(services) > 1:
+            logging.warn("There are multiple presence services, this is not supported")
+        if len(services) >= 1:
+            return presenceMessage( services[0],message=discordMessage,targetUser=user)
+        else:
+            logging.warn("There is no presence service configured")

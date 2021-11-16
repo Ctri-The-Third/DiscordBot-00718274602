@@ -1,0 +1,39 @@
+[ 
+  { 
+    "serviceName": "Ramoth",
+    "serviceType": "server",
+    "serverMacAddress-off" : "18-c0-d4-49-59-d0",
+    "host" : "192.168.0.134",
+    "shutdownCommand-off" : "serviceControls\\sleepRamoth.bat",
+    "prefixEmoji" : "🖥️" 
+  },  
+  {
+    "serviceName": " 🏞Hordelings", 
+    "serviceType": "valheim",
+    "host": "192.168.0.134",
+    "statusPort": 2459,
+    "startupCommand": "serviceControls\\launchValheimHordelings",
+    "shutdownCommand": "serviceControls\\deleteValheimHordelings",
+    "prefixEmoji" : "🇦",
+    "guilds" : ["D&D Horde"]
+        
+  },
+  {
+    "serviceName": " 🕹DeltaPals",
+    "serviceType": "valheim",
+    "host": "192.168.0.134",
+    "statusPort": 3303,
+    "startupCommand": "serviceControls\\launchValheimDeltaPals",
+    "shutdownCommand": "serviceControls\\deleteValheimDeltaPals",
+    "prefixEmoji" : "🇧",
+    "guilds" : ["deltaDNA"]
+  },
+  {
+    "serviceName": "presence", 
+    "serviceType": "presence",
+    "servicePort":9636,
+    "serviceHost": "home.ctri.co.uk",
+	"serviceKey": "T3BhbGVzY2FudCBPYnNlcnZhbmNlcw==",
+	  "prefixEmoji" : "🟣"
+  }
+] 

@@ -100,12 +100,12 @@ class Warforged(discord.Client):
 
     async def on_raw_reaction_add(self,payload):
         if payload.guild_id == None: 
-            channel = await self.fetch_channel(payload.channel_id)
+            channel = await self.fetch_channel(payload.channel_id) 
             message = await channel.fetch_message(payload.message_id)
             user = await self.fetch_user(payload.user_id)
             isMessage =  models.presenceMessage.isPresenceMessage(message)
             if isMessage:
-                presenceMessage = models.presenceMessage.getPresenceMessageFromDiscordMessage(message)
+                presenceMessage = await models.presenceMessage.getPresenceMessageFromDiscordMessage(message,user)
                 presenceMessage.on_reaction_add_raw(user,payload.emoji.name)
 
             
