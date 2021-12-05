@@ -17,6 +17,7 @@ class ServicePresence(Service):
     _disableds = 0
     _controlMessages = []
     _authorizedIDs = []
+    _purgeLevel = 0 
 
     def __init__(self,serviceName, serviceType, prefixEmoji = None, presenceHost = None, presencePort = None, presenceKey = None, authorizedIDs = None):
         super().__init__(serviceName,serviceType) 
@@ -119,6 +120,33 @@ class ServicePresence(Service):
         headers = self._getHeaders()
         result = requests.post(url=url,headers=headers)
         print(result)
+
+    def cmdPurgeInbox(self,userID):
+        if not self.checkAuthUser(userID):
+            return
+        self._cmdPurgeInbox()
+
+    def _cmdPurgeInbox(self):
+        services = [
+            ["habitica", False],
+            ["freshdesk",False],
+            ["zendesk",False],
+            ["jira",True],
+            ["gmail",True]]
+        
+        for service in services:
+            serviceName = service[0]
+            subservice = service[1]
+            url = "{url}{servicename}/purge/{subserviceaddition}{purgeLevel}".format(
+                url=self._getURL(),
+                servicename=serviceName,
+                subserviceaddition = "*/" if subservice else "",
+                purgeLevel = self._purgeLevel)
+            headers = self._getHeaders()
+            requests.post(url = url, headers = headers)
+        
+        
+
 
 
 if __name__ == '__main__':

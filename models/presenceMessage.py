@@ -111,7 +111,11 @@ class presenceMessage:
             self.presenceService.cmdWorkTasksEnable(user.id)
         elif emoji_name == "🔴":
             self.presenceService.cmdWorkTasksDisable(user.id)
-            pass 
+        elif emoji_name == "😴":
+            self.presenceService.cmdTriggerShutdown(user.id)
+        elif emoji_name == "📤":
+            self.presenceService.cmdPurgeInbox(user.id)
+             
         return 
 
 
