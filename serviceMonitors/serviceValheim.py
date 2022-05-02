@@ -1,3 +1,4 @@
+from http import server
 import os
 import requests
 import json
@@ -98,12 +99,13 @@ class ServiceValheim(Service):
     def getStatusText(self):
         return self._statusText
 
-    async def tryStartService(self, guild = None ):
-        if guild == None or guild.name in self.validGuilds:           
-            t = threading.Thread(target=self._startService )
-            t.start()
-            self.lastOccupied = datetime.datetime.now()
-            return True
+    async def tryStartService(self, guild = None, server_name= "*" ):
+        if guild is None or guild.name in self.validGuilds:   
+            if server_name == self.serviceName or server_name == "*":
+                t = threading.Thread(target=self._startService )
+                t.start()
+                self.lastOccupied = datetime.datetime.now() 
+                return True
         return False
     async def tryStopService(self):
         os.system(self.shutdownCommand)

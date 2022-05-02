@@ -88,6 +88,54 @@ class ServicePresence(Service):
     def _getURL(self) -> str:
         return "http://{0}:{1}/".format(self.presenceHost,self.presencePort)
 
+    def cmdWorkTasksEnable(self,userID):
+        if not self.checkAuthUser(userID):
+            return 
+        self._cmdWorkTasksToggle("true")
+
+    def cmdWorkTasksDisable(self,userID):
+        if not self.checkAuthUser(userID):
+            return 
+        self._cmdWorkTasksToggle("false")
+
+    def _cmdWorkTasksToggle(self,newState):
+        url = "{}{}{}".format(self._getURL(),"servicecontrol/worktasks/",newState)
+        headers = self._getHeaders()
+        result = requests.post(url=url,headers=headers)
+        print(result)
+
+
+    def cmdTriggerShutdown(self, userID):
+        return 
+
+    def cmdPurgeInbox(self,userID):
+        if not self.checkAuthUser(userID):
+            return
+        self._cmdPurgeInbox()
+
+    def _cmdPurgeInbox(self):
+        services = [
+            ["habitica", False],
+            ["freshdesk",False],
+            ["zendesk",False],
+            ["jira",True],
+            ["gmail",True]]
+        
+        for service in services:
+            serviceName = service[0]
+            subservice = service[1]
+            url = "{url}{servicename}/purge/{subserviceaddition}{purgeLevel}".format(
+                url=self._getURL(),
+                servicename=serviceName,
+                subserviceaddition = "*/" if subservice else "",
+                purgeLevel = self._purgeLevel)
+            headers = self._getHeaders()
+            requests.post(url = url, headers = headers)
+        
+        
+
+
+
 if __name__ == '__main__':
     settings = json.load(open("services.json"))
     s = ServicePresence("Presence","Presence","🟣","home.ctri.co.uk",9369,settings[4]["serviceKey"])

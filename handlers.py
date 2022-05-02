@@ -4,8 +4,10 @@ import platform
 import math
 import random
 import re
+from bot import Warforged
+from models.presenceMessage import presenceMessage
 from models.statusMessage import *
-from SQLconnector import * 
+#from SQLconnector import * 
 import serviceMonitors.serviceValheim
 async def reactEyes(message):
     try:
@@ -20,15 +22,23 @@ async def reactTrophies(message):
     except discord.HTTPException:
         pass
 
-async def cmdValheim(message,bot, all = None):
+async def cmdValheim(message: discord.Message,bot: Warforged, all = None):
+    sub_command = re.match("!.*valheim +([a-zA-Z0-9_]*)", message.clean_content)
+    try:
+        #only launch a single valheim instance
+        server_name = message.clean_content[sub_command.regs[1][0]:sub_command.regs[1][1]]
+    except (TypeError,IndexError, AttributeError) as err:
+        server_name = "*"
+    
+        
     serviceController = bot.serviceMonitorInstance
     if serviceController is None:
-        message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
+        await message.channel.send("Unable to connect to service controller - try again in 2 seconds.")
         return
     foundServices = False
     for service in serviceController.getServices(serviceType="valheim"):
         if isinstance(service,serviceMonitors.serviceValheim.ServiceValheim):
-            if await service.tryStartService(guild = message.guild):
+            if await service.tryStartService(guild = message.guild, server_name = server_name):
                 foundServices = True
     if foundServices == True:
         await message.channel.send("Attempted to activate appropriate valheim servers. See `!007 status` for progress.")
