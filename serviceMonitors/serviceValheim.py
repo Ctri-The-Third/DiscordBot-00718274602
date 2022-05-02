@@ -101,7 +101,7 @@ class ServiceValheim(Service):
 
     async def tryStartService(self, guild = None, server_name= "*" ):
         if guild is None or guild.name in self.validGuilds:   
-            if server_name == self.serviceName or server_name == "*":
+            if server_name.lower() == self.serviceName.lower() or server_name == "*":
                 t = threading.Thread(target=self._startService )
                 t.start()
                 self.lastOccupied = datetime.datetime.now() 
